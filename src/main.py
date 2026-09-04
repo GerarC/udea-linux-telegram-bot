@@ -23,6 +23,7 @@ def main() -> None:
         modules=[
             "news.infrastructure.input.tg.msg_handler",
             "points.infrastructure.input.tg.msg_handler",
+            "banter.infrastructure.input.tg.msg_handler",
         ]
     )
 

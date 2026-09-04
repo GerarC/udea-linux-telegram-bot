@@ -21,6 +21,12 @@ Muestra el ranking de Autispuntos del grupo.
 Muestra cuántos Autispuntos tienes. Si respondes (reply) al mensaje de otra \
 persona, muestra los de ella en vez de los tuyos.
 
+😈 <b>/insultar @usuario</b> — <i>cualquiera</i>
+Le manda un insulto random (con cariño) a quien menciones.
+
+🥰 <b>/cumplido @usuario</b> — <i>cualquiera</i>
+Le manda un cumplido random a quien menciones.
+
 ❓ <b>/help</b> — <i>cualquiera</i>
 Muestra este mensaje.\
 """
