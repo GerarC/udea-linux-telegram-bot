@@ -1,5 +1,6 @@
 from dependency_injector import containers, providers
 
+from activity.application.bootstrap.container import ActivityContainer
 from banter.application.bootstrap.container import BanterContainer
 from common.infrastructure.configuration.settings import load_settings
 from common.infrastructure.output.postgres.pool import init_pool
@@ -24,3 +25,4 @@ class ApplicationContainer(containers.DeclarativeContainer):
     news = providers.Container(NewsContainer, pool=db_pool)
     points = providers.Container(PointsContainer, pool=db_pool)
     banter = providers.Container(BanterContainer, pool=db_pool)
+    activity = providers.Container(ActivityContainer, pool=db_pool)

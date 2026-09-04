@@ -27,6 +27,11 @@ Le manda un insulto random (con cariño) a quien menciones.
 🥰 <b>/cumplido @usuario</b> — <i>cualquiera</i>
 Le manda un cumplido random a quien menciones.
 
+📢 <b>/mas_desocupados [mes|total]</b> — <i>cualquiera</i>
+Top 5 de quienes más mensajes envían. Sin argumento muestra el mes actual (con quién \
+subió/bajó frente al mes pasado) y el histórico. <code>mes</code> o <code>total</code> \
+muestran solo esa sección.
+
 ❓ <b>/help</b> — <i>cualquiera</i>
 Muestra este mensaje.\
 """

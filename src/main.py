@@ -1,5 +1,3 @@
-import logging
-
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -7,16 +5,14 @@ load_dotenv()
 from telegram import Update
 
 from common.application.bootstrap.container import ApplicationContainer
+from common.infrastructure.configuration.logging_config import setup_logging
 from common.infrastructure.configuration.settings import load_settings
 from common.infrastructure.input.tg.bot import build_application, register_commands
 
 
 def main() -> None:
     settings = load_settings()
-    logging.basicConfig(
-        format="%(asctime)s %(levelname)s %(name)s - %(message)s",
-        level=settings.log_level,
-    )
+    setup_logging(settings.log_level)
 
     container = ApplicationContainer()
     container.wire(
@@ -24,6 +20,7 @@ def main() -> None:
             "news.infrastructure.input.tg.msg_handler",
             "points.infrastructure.input.tg.msg_handler",
             "banter.infrastructure.input.tg.msg_handler",
+            "activity.infrastructure.input.tg.msg_handler",
         ]
     )
 
