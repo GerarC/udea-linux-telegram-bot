@@ -28,6 +28,15 @@ ORDER BY ap.points DESC
 LIMIT $2
 """
 
+GET_POSITION_SQL = """
+SELECT rank FROM (
+    SELECT user_id, RANK() OVER (ORDER BY points DESC) AS rank
+    FROM autispuntos
+    WHERE chat_id = $1
+) ranked
+WHERE user_id = $2
+"""
+
 
 class PostgresPointsRepository(PointsRepositoryPort):
     """Implements PointsRepositoryPort against Postgres via asyncpg."""
@@ -52,3 +61,7 @@ class PostgresPointsRepository(PointsRepositoryPort):
         async with self._pool.acquire() as conn:
             rows = await conn.fetch(GET_RANKING_SQL, chat_id, limit)
         return [UserPoints(user_id=row["user_id"], username=row["username"], points=row["points"]) for row in rows]
+
+    async def get_position(self, chat_id: int, user_id: int) -> int | None:
+        async with self._pool.acquire() as conn:
+            return await conn.fetchval(GET_POSITION_SQL, chat_id, user_id)

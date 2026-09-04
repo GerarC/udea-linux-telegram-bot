@@ -1,6 +1,7 @@
 from dependency_injector import containers, providers
 
 from activity.domain.usecase.activity_usecase import ActivityUsecase
+from activity.domain.usecase.activity_user_info_provider import ActivityUserInfoProvider
 from activity.infrastructure.configuration.settings import load_activity_settings
 from activity.infrastructure.output.postgres.repository_adapter import PostgresActivityRepository
 from activity.infrastructure.output.postgres.schema import ensure_schema
@@ -27,3 +28,5 @@ class ActivityContainer(containers.DeclarativeContainer):
         repository_port=repository_port,
         ranking_limit=_settings.ranking_limit,
     )
+
+    user_info_provider = providers.Factory(ActivityUserInfoProvider, activity_service=usecase)

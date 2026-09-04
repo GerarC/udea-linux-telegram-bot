@@ -5,6 +5,7 @@ from activity.infrastructure.input.tg.msg_handler import most_inactive_command, 
 from banter.infrastructure.input.tg.msg_handler import cumplido_command, insultar_command
 from common.infrastructure.input.tg.error_handler import error_handler
 from common.infrastructure.input.tg.help_handler import help_command
+from common.infrastructure.input.tg.user_info_handler import user_info_command
 from news.infrastructure.input.tg.msg_handler import on_message
 from points.infrastructure.input.tg.msg_handler import grant_points_command, my_points_command, ranking_command
 
@@ -16,6 +17,7 @@ BOT_COMMANDS = [
     BotCommand("insultar", "Insulta (con cariño) a un usuario"),
     BotCommand("cumplido", "Le dice un cumplido a un usuario"),
     BotCommand("mas_desocupados", "Top 5 de quienes más mensajes envían"),
+    BotCommand("info_usuario", "Muestra tu información acumulada en el bot (o la de alguien, con reply)"),
 ]
 
 
@@ -45,6 +47,7 @@ def build_application(
     app.add_handler(CommandHandler("insultar", insultar_command))
     app.add_handler(CommandHandler("cumplido", cumplido_command))
     app.add_handler(CommandHandler("mas_desocupados", most_inactive_command))
+    app.add_handler(CommandHandler("info_usuario", user_info_command))
     app.add_handler(CommandHandler("help", help_command))
     app.add_error_handler(error_handler)
     return app

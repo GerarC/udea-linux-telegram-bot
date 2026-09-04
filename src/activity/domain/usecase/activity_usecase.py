@@ -47,3 +47,9 @@ class ActivityUsecase:
 
     async def get_all_time_ranking(self, chat_id: int, limit: int | None = None) -> list[UserActivity]:
         return await self._repository_port.get_all_time_ranking(chat_id, limit or self._ranking_limit)
+
+    async def get_monthly_stats(self, chat_id: int, user_id: int) -> tuple[int, int] | None:
+        return await self._repository_port.get_monthly_stats(chat_id, user_id, _current_month())
+
+    async def get_all_time_stats(self, chat_id: int, user_id: int) -> tuple[int, int] | None:
+        return await self._repository_port.get_all_time_stats(chat_id, user_id)

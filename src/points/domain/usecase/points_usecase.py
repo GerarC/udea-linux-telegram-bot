@@ -35,6 +35,9 @@ class PointsUsecase:
             user_points = UserPoints(user_id=user_id, username=username, points=0)
         return RankingEntry(user_points=user_points, level_label=self._level_for(user_points.points))
 
+    async def get_position(self, chat_id: int, user_id: int) -> int | None:
+        return await self._repository_port.get_position(chat_id, user_id)
+
     @staticmethod
     def _level_for(points: int) -> str:
         for threshold, label in LEVEL_THRESHOLDS:

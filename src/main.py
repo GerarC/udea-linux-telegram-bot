@@ -21,6 +21,7 @@ def main() -> None:
             "points.infrastructure.input.tg.msg_handler",
             "banter.infrastructure.input.tg.msg_handler",
             "activity.infrastructure.input.tg.msg_handler",
+            "common.infrastructure.input.tg.user_info_handler",
         ]
     )
 

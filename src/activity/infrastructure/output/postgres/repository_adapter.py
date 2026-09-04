@@ -31,6 +31,26 @@ ORDER BY message_count DESC
 LIMIT $2
 """
 
+GET_MONTHLY_STATS_SQL = """
+SELECT message_count, rank FROM (
+    SELECT user_id, message_count, RANK() OVER (ORDER BY message_count DESC) AS rank
+    FROM user_message_stats
+    WHERE chat_id = $1 AND period_month = $2
+) ranked
+WHERE user_id = $3
+"""
+
+GET_ALL_TIME_STATS_SQL = """
+SELECT message_count, rank FROM (
+    SELECT user_id, SUM(message_count)::bigint AS message_count,
+           RANK() OVER (ORDER BY SUM(message_count) DESC) AS rank
+    FROM user_message_stats
+    WHERE chat_id = $1
+    GROUP BY user_id
+) ranked
+WHERE user_id = $2
+"""
+
 
 class PostgresActivityRepository(ActivityRepositoryPort):
     """Implements ActivityRepositoryPort against Postgres via asyncpg."""
@@ -62,3 +82,13 @@ class PostgresActivityRepository(ActivityRepositoryPort):
             UserActivity(user_id=row["user_id"], username=row["username"], message_count=row["message_count"])
             for row in rows
         ]
+
+    async def get_monthly_stats(self, chat_id: int, user_id: int, period_month: date) -> tuple[int, int] | None:
+        async with self._pool.acquire() as conn:
+            row = await conn.fetchrow(GET_MONTHLY_STATS_SQL, chat_id, period_month, user_id)
+        return (row["message_count"], row["rank"]) if row else None
+
+    async def get_all_time_stats(self, chat_id: int, user_id: int) -> tuple[int, int] | None:
+        async with self._pool.acquire() as conn:
+            row = await conn.fetchrow(GET_ALL_TIME_STATS_SQL, chat_id, user_id)
+        return (row["message_count"], row["rank"]) if row else None
