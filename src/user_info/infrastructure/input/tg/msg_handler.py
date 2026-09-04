@@ -6,7 +6,7 @@ from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
 from common.application.bootstrap.container import ApplicationContainer
-from common.domain.api.user_info_service import UserInfoService
+from user_info.domain.api.user_info_service import UserInfoService
 
 
 def _display_name(user) -> str:
@@ -17,7 +17,7 @@ def _display_name(user) -> str:
 async def user_info_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    user_info_service: UserInfoService = Provide[ApplicationContainer.user_info_usecase],
+    user_info_service: UserInfoService = Provide[ApplicationContainer.user_info.usecase],
 ) -> None:
     message = update.effective_message
     if message is None:

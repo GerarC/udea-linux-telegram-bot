@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from common.domain.model.user_info import UserInfo
+from user_info.domain.model.user_info import UserInfo
 
 
 class UserInfoService(Protocol):

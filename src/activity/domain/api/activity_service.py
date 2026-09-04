@@ -1,5 +1,6 @@
 from typing import Protocol
 
+from activity.domain.model.group_stats import GroupStats
 from activity.domain.model.monthly_ranking_entry import MonthlyRankingEntry
 from activity.domain.model.user_activity import UserActivity
 
@@ -22,3 +23,5 @@ class ActivityService(Protocol):
     async def get_all_time_stats(self, chat_id: int, user_id: int) -> tuple[int, int] | None:
         """Returns (message_count, 1-based rank) for this user overall, or None if they never posted."""
         ...
+
+    async def get_group_stats(self, chat_id: int) -> GroupStats: ...

@@ -2,11 +2,12 @@ from dependency_injector import containers, providers
 
 from activity.application.bootstrap.container import ActivityContainer
 from banter.application.bootstrap.container import BanterContainer
-from common.domain.usecase.user_info_usecase import UserInfoUsecase
 from common.infrastructure.configuration.settings import load_settings
 from common.infrastructure.output.postgres.pool import init_pool
 from news.application.bootstrap.container import NewsContainer
 from points.application.bootstrap.container import PointsContainer
+from polls.application.bootstrap.container import PollsContainer
+from user_info.application.bootstrap.container import UserInfoContainer
 
 _settings = load_settings()
 
@@ -26,7 +27,15 @@ class ApplicationContainer(containers.DeclarativeContainer):
     news = providers.Container(NewsContainer, pool=db_pool)
     points = providers.Container(PointsContainer, pool=db_pool)
     banter = providers.Container(BanterContainer, pool=db_pool)
-    activity = providers.Container(ActivityContainer, pool=db_pool)
+    polls = providers.Container(PollsContainer, pool=db_pool)
+
+    # NOTE: /stats_grupo (activity) shows its own numbers plus one line per feature
+    # that implements GroupStatsProviderPort - add new ones here as they show up.
+    group_stats_providers = providers.List(
+        polls.group_stats_provider,
+    )
+
+    activity = providers.Container(ActivityContainer, pool=db_pool, group_stats_providers=group_stats_providers)
 
     # NOTE: /usuario_info fans out to every feature's user_info_provider. A feature that
     # has per-user data to show just adds its own provider here - see
@@ -34,6 +43,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
     user_info_providers = providers.List(
         points.user_info_provider,
         activity.user_info_provider,
+        polls.user_info_provider,
     )
 
-    user_info_usecase = providers.Factory(UserInfoUsecase, providers=user_info_providers)
+    user_info = providers.Container(UserInfoContainer, info_providers=user_info_providers)

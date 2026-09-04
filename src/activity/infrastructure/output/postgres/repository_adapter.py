@@ -12,6 +12,12 @@ VALUES ($1, $2, $3, 1)
 ON CONFLICT (chat_id, user_id, period_month) DO UPDATE SET message_count = user_message_stats.message_count + 1
 """
 
+REGISTER_TIMELINE_SQL = """
+INSERT INTO chat_activity_timeline (chat_id, hour_of_day, weekday, message_count)
+VALUES ($1, $2, $3, 1)
+ON CONFLICT (chat_id, hour_of_day, weekday) DO UPDATE SET message_count = chat_activity_timeline.message_count + 1
+"""
+
 GET_MONTHLY_RANKING_SQL = """
 SELECT gm.user_id, gm.username, ums.message_count
 FROM user_message_stats ums
@@ -51,6 +57,36 @@ SELECT message_count, rank FROM (
 WHERE user_id = $2
 """
 
+GET_CHAT_MONTHLY_TOTALS_SQL = """
+SELECT COALESCE(SUM(message_count), 0)::bigint AS total, COUNT(DISTINCT user_id) AS participants
+FROM user_message_stats
+WHERE chat_id = $1 AND period_month = $2
+"""
+
+GET_CHAT_ALL_TIME_TOTAL_SQL = """
+SELECT COALESCE(SUM(message_count), 0)::bigint AS total
+FROM user_message_stats
+WHERE chat_id = $1
+"""
+
+GET_PEAK_HOUR_SQL = """
+SELECT hour_of_day
+FROM chat_activity_timeline
+WHERE chat_id = $1
+GROUP BY hour_of_day
+ORDER BY SUM(message_count) DESC
+LIMIT 1
+"""
+
+GET_PEAK_WEEKDAY_SQL = """
+SELECT weekday
+FROM chat_activity_timeline
+WHERE chat_id = $1
+GROUP BY weekday
+ORDER BY SUM(message_count) DESC
+LIMIT 1
+"""
+
 
 class PostgresActivityRepository(ActivityRepositoryPort):
     """Implements ActivityRepositoryPort against Postgres via asyncpg."""
@@ -58,10 +94,13 @@ class PostgresActivityRepository(ActivityRepositoryPort):
     def __init__(self, pool: asyncpg.Pool) -> None:
         self._pool = pool
 
-    async def register_message(self, chat_id: int, user_id: int, username: str, period_month: date) -> None:
+    async def register_message(
+        self, chat_id: int, user_id: int, username: str, period_month: date, hour_of_day: int, weekday: int
+    ) -> None:
         async with self._pool.acquire() as conn, conn.transaction():
             await upsert_member(conn, chat_id, user_id, username)
             await conn.execute(REGISTER_MESSAGE_SQL, chat_id, user_id, period_month)
+            await conn.execute(REGISTER_TIMELINE_SQL, chat_id, hour_of_day, weekday)
 
     async def get_monthly_ranking(
         self, chat_id: int, period_month: date, limit: int | None = None
@@ -92,3 +131,20 @@ class PostgresActivityRepository(ActivityRepositoryPort):
         async with self._pool.acquire() as conn:
             row = await conn.fetchrow(GET_ALL_TIME_STATS_SQL, chat_id, user_id)
         return (row["message_count"], row["rank"]) if row else None
+
+    async def get_chat_monthly_totals(self, chat_id: int, period_month: date) -> tuple[int, int]:
+        async with self._pool.acquire() as conn:
+            row = await conn.fetchrow(GET_CHAT_MONTHLY_TOTALS_SQL, chat_id, period_month)
+        return row["total"], row["participants"]
+
+    async def get_chat_all_time_total(self, chat_id: int) -> int:
+        async with self._pool.acquire() as conn:
+            return await conn.fetchval(GET_CHAT_ALL_TIME_TOTAL_SQL, chat_id)
+
+    async def get_peak_hour(self, chat_id: int) -> int | None:
+        async with self._pool.acquire() as conn:
+            return await conn.fetchval(GET_PEAK_HOUR_SQL, chat_id)
+
+    async def get_peak_weekday(self, chat_id: int) -> int | None:
+        async with self._pool.acquire() as conn:
+            return await conn.fetchval(GET_PEAK_WEEKDAY_SQL, chat_id)
