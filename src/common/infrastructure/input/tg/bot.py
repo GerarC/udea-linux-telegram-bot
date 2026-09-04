@@ -1,13 +1,14 @@
 from telegram import BotCommand
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
-from activity.infrastructure.input.tg.msg_handler import most_inactive_command, track_message
+from activity.infrastructure.input.tg.msg_handler import group_stats_command, most_inactive_command, track_message
 from banter.infrastructure.input.tg.msg_handler import cumplido_command, insultar_command
 from common.infrastructure.input.tg.error_handler import error_handler
 from common.infrastructure.input.tg.help_handler import help_command
-from common.infrastructure.input.tg.user_info_handler import user_info_command
 from news.infrastructure.input.tg.msg_handler import on_message
 from points.infrastructure.input.tg.msg_handler import grant_points_command, my_points_command, ranking_command
+from polls.infrastructure.input.tg.msg_handler import encuesta_command
+from user_info.infrastructure.input.tg.msg_handler import user_info_command
 
 BOT_COMMANDS = [
     BotCommand("help", "Muestra qué puede hacer el bot"),
@@ -18,6 +19,8 @@ BOT_COMMANDS = [
     BotCommand("cumplido", "Le dice un cumplido a un usuario"),
     BotCommand("mas_desocupados", "Top 5 de quienes más mensajes envían"),
     BotCommand("usuario_info", "Muestra tu información acumulada en el bot (o la de alguien, con reply)"),
+    BotCommand("stats_grupo", "Estadísticas del grupo: mensajes, hora pico, día más activo"),
+    BotCommand("encuesta", "Crea una encuesta: /encuesta pregunta | opción1 | opción2"),
 ]
 
 
@@ -48,6 +51,8 @@ def build_application(
     app.add_handler(CommandHandler("cumplido", cumplido_command))
     app.add_handler(CommandHandler("mas_desocupados", most_inactive_command))
     app.add_handler(CommandHandler("usuario_info", user_info_command))
+    app.add_handler(CommandHandler("stats_grupo", group_stats_command))
+    app.add_handler(CommandHandler("encuesta", encuesta_command))
     app.add_handler(CommandHandler("help", help_command))
     app.add_error_handler(error_handler)
     return app

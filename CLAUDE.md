@@ -11,20 +11,23 @@ src/
 │   ├── application/bootstrap/container.py   # ApplicationContainer: agrega los containers de cada feature
 │   ├── domain/                                # "shared kernel": el único domain que otras features pueden importar
 │   │   ├── error/domain_error.py                # excepción base compartida (con user_message opcional)
-│   │   ├── api/user_info_service.py              # puerto de entrada de /usuario_info
-│   │   ├── model/{user_info,user_info_section}.py  # entidades de /usuario_info
-│   │   ├── spi/user_info_provider_port.py        # puerto que implementa cada feature para aportar a /usuario_info
-│   │   └── usecase/user_info_usecase.py           # hace fan-out a todos los providers registrados
+│   │   ├── model/user_info_section.py            # contrato: la sección que cada feature aporta a /usuario_info
+│   │   └── spi/user_info_provider_port.py        # contrato: puerto que implementa cada feature para aportar esa sección
 │   └── infrastructure/
 │       ├── configuration/settings.py          # env vars globales (token, DB, log level)
 │       ├── configuration/logging_config.py     # JSON logging (un log = una línea JSON, para Grafana/Loki)
 │       ├── input/tg/{bot,help_handler}.py       # arma la Application de Telegram, registra handlers y el menú "/"
 │       ├── input/tg/error_handler.py            # handler global (app.add_error_handler) para excepciones no atrapadas
-│       ├── input/tg/user_info_handler.py        # comando /usuario_info
 │       └── output/postgres/
 │           ├── pool.py                            # pool de asyncpg ÚNICO, compartido por todas las features
 │           ├── schema.py                           # crea group_members (identidad compartida chat_id+user_id)
 │           └── members.py                          # upsert_member(conn, chat_id, user_id, username)
+├── user_info/                    # feature normal (misma forma de abajo) que AGREGA lo que otras features exponen
+│   ├── application/bootstrap/container.py     # recibe la lista de providers como providers.Dependency() (no un pool)
+│   ├── domain/{api/user_info_service.py, model/user_info.py, usecase/user_info_usecase.py}
+│   └── infrastructure/input/tg/msg_handler.py
+│       # sin infrastructure/output/ propio - no tiene persistencia, solo agrega
+│       # UserInfoProviderPort de otras features (inyectados por el container raíz)
 └── <feature>/
     ├── application/bootstrap/container.py   # DI: arma adapters + usecase de ESTA feature
     ├── domain/
@@ -49,11 +52,14 @@ src/
    necesita algo externo (DB, HTTP, Telegram), se define como un puerto en
    `domain/spi/` y se implementa en `infrastructure/output/`.
    - **Excepción**: `common/domain/` es el único domain que una feature SÍ puede
-     importar — es el "shared kernel" transversal (`DomainError`, y los contratos
-     de `/usuario_info`: `UserInfoProviderPort`, `UserInfoSection`). Sigue siendo solo
-     domain puro (sin librerías de terceros), así que no rompe la regla de pureza.
-     Ninguna feature importa el `domain/` de OTRA feature directamente — solo
-     `common/domain/`.
+     importar — es el "shared kernel" transversal: `DomainError`, y los contratos
+     que una feature implementa para aportar a `/usuario_info`
+     (`UserInfoProviderPort`, `UserInfoSection`). Solo van a `common/domain/` los
+     CONTRATOS que de verdad implementan/consumen varias features — no el
+     `UserInfoUsecase` que los agrega, ese vive en su propia feature `user_info/`
+     (ver regla 12). Sigue siendo solo domain puro (sin librerías de terceros),
+     así que no rompe la regla de pureza. Ninguna feature importa el `domain/` de
+     OTRA feature directamente — solo `common/domain/`.
 
 2. **`api`, `model`, `spi`, `usecase`, `error`/`exception` son CARPETAS, no archivos.**
    Cada archivo dentro tiene un nombre descriptivo del concepto que contiene
@@ -133,12 +139,27 @@ src/
      dentro de su propio `ensure_schema()`, de forma idempotente y sin perder las
      filas existentes (ver `points/infrastructure/output/postgres/schema.py` como
      ejemplo real de esta migración).
+   - Esta FK solo aplica a datos **por usuario**. Un dato agregado a nivel de
+     chat (ej. `chat_activity_timeline`: mensajes por hora/día de la semana del
+     grupo entero) NO lleva FK a `group_members` ni pasa por `upsert_member` —
+     no tiene `user_id` que referenciar (ver
+     `activity/infrastructure/output/postgres/schema.py`).
 
 9. **Idioma**: todo el código (identificadores, comentarios, docstrings) en inglés.
    Única excepción intencional: texto de cara al usuario en español (mensajes del
    bot, palabras del regex de trigger, etiquetas de nivel) porque el bot atiende
    un grupo hispanohablante — eso se queda en español y se documenta con un
    comentario `NOTE:` explicando por qué.
+   - Si una regla de negocio necesita hora/fecha en **hora local del grupo**
+     (ej. "hora pico de actividad"), usar `zoneinfo.ZoneInfo("America/Bogota")`
+     (stdlib, sigue siendo domain puro) en vez de UTC — pero `zoneinfo` depende
+     de una base de datos de zonas horarias que Windows NO trae, y algunas
+     imágenes Docker mínimas (`slim`, Alpine) tampoco. Hay que declarar
+     `tzdata` en `requirements.txt` como dependencia (no se importa directo en
+     el código, `zoneinfo` la descubre sola) para que funcione en cualquier
+     entorno. La zona horaria en sí es una constante de negocio
+     (`domain/utils/constants.py`), configurable por env var igual que
+     cualquier otro límite (ver `activity/infrastructure/configuration/settings.py`).
 
 10. **Errores de dominio con mensaje de usuario**: `DomainError`
     (`common/domain/error/domain_error.py`) acepta un `user_message: str | None`
@@ -170,19 +191,26 @@ src/
     `common/infrastructure/input/tg/bot.py` (`app.add_handler(handler, group=1)`),
     documentando el porqué con un `NOTE:` — si no, el segundo handler nunca corre.
 
-12. **`/usuario_info` (fan-out a providers)**: es el comando transversal que agrega
-    info por-usuario de todas las features (Autispuntos, actividad, y lo que se
-    agregue). Vive en `common` porque nadie más puede ser dueño de "el resumen de
-    todas las features":
+12. **`/usuario_info` (fan-out a providers)**: agrega info por-usuario de todas
+    las features (Autispuntos, actividad, y lo que se agregue). El CONTRATO vive
+    en `common` (porque todas las features lo implementan/consumen), pero la
+    AGREGACIÓN en sí es una feature normal, `user_info/`, no vive en `common`
+    — `common` es solo para lo transversal, no para dueños de features:
     - `common/domain/spi/user_info_provider_port.py` define `UserInfoProviderPort`
       (`get_section(chat_id, user_id, username) -> UserInfoSection | None`, `None`
-      si la feature no tiene nada que mostrar para ese usuario).
-    - `common/domain/usecase/user_info_usecase.py` (`UserInfoUsecase`) recibe una
-      `list[UserInfoProviderPort]` en el constructor y llama a todos en paralelo
-      (`asyncio.gather`); si un provider individual lanza excepción, esa sección
-      se omite (se loguea) en vez de tumbar toda la respuesta — mismo criterio de
-      "degradar en vez de fallar todo" que usa `RssFeedAdapter` con feeds
-      individuales.
+      si la feature no tiene nada que mostrar para ese usuario) y
+      `common/domain/model/user_info_section.py` define `UserInfoSection` — son
+      los únicos dos archivos de `/usuario_info` que están en `common`, porque son
+      el contrato que otras features importan.
+    - `user_info/domain/usecase/user_info_usecase.py` (`UserInfoUsecase`) recibe
+      una `list[UserInfoProviderPort]` en el constructor y llama a todos en
+      paralelo (`asyncio.gather`); si un provider individual lanza excepción, esa
+      sección se omite (se loguea) en vez de tumbar toda la respuesta — mismo
+      criterio de "degradar en vez de fallar todo" que usa `RssFeedAdapter` con
+      feeds individuales. `user_info/domain/api/user_info_service.py` y
+      `user_info/infrastructure/input/tg/msg_handler.py` completan la feature;
+      no tiene `infrastructure/output/` propio porque no persiste nada, solo
+      agrega lo que otras features ya calcularon.
     - Cada feature que tiene datos por usuario implementa su propio provider en
       su **propio** `domain/usecase/` (ej.
       `points/domain/usecase/points_user_info_provider.py`), envolviendo su
@@ -193,11 +221,41 @@ src/
     - El container de cada feature expone `user_info_provider =
       providers.Factory(<Feature>UserInfoProvider, ...)`. El `ApplicationContainer`
       raíz los agrega con `providers.List(points.user_info_provider,
-      activity.user_info_provider, ...)` y arma `user_info_usecase =
-      providers.Factory(UserInfoUsecase, providers=user_info_providers)`.
+      activity.user_info_provider, ...)` y se lo inyecta a `UserInfoContainer`
+      como `providers.Container(UserInfoContainer, info_providers=user_info_providers)`
+      — el mismo patrón que usa `pool` para inyectarse a cada feature (regla 6),
+      solo que aquí lo que se inyecta es la lista de providers en vez del pool.
     - **Al agregar una feature nueva con datos por usuario**: si tiene sentido
-      mostrarla en `/usuario_info`, agregar su provider a esa lista — es el único paso
-      extra sobre el checklist normal de abajo.
+      mostrarla en `/usuario_info`, agregar su provider a `user_info_providers` en
+      el `ApplicationContainer` — es el único paso extra sobre el checklist normal
+      de abajo.
+
+13. **`/stats_grupo` (mismo patrón de fan-out, pero a nivel de chat)**: a
+    diferencia de `/usuario_info`, `/stats_grupo` sigue siendo dueño de una sola
+    feature (`activity`, que ya calcula sus propios números) — otras features
+    solo le APORTAN una línea extra, no lo reemplazan:
+    - `common/domain/spi/group_stats_provider_port.py` define
+      `GroupStatsProviderPort` (`get_group_stat_line(chat_id) -> str | None`).
+      Es el único archivo de este mecanismo que vive en `common` — el contrato.
+    - Cualquier feature que quiera aportar una línea (ej. `polls`) implementa este
+      puerto en su propio `domain/usecase/` (`polls_group_stats_provider.py`),
+      envolviendo su propio `<Feature>Service` — igual regla que en `user_info`:
+      domain puro, sin acceder a otra feature.
+    - `ActivityUsecase` recibe `group_stats_providers: list[GroupStatsProviderPort]`
+      (default `[]` si no se inyecta ninguno) y hace `asyncio.gather` sobre ellos
+      igual que `UserInfoUsecase`, agregando las líneas no-`None` a
+      `GroupStats.extra_lines`. Que `activity` dependa de este puerto de `common`
+      no rompe la regla 1 (es la misma excepción del shared kernel).
+    - El `ApplicationContainer` raíz arma `group_stats_providers =
+      providers.List(polls.group_stats_provider, ...)` **antes** de construir
+      `activity` (`activity = providers.Container(ActivityContainer, pool=db_pool,
+      group_stats_providers=group_stats_providers)`) — el container que agrega la
+      lista siempre debe declararse después de todos los que contribuyen a ella.
+      `ActivityContainer` expone `group_stats_providers = providers.Dependency(default=[])`
+      para que siga funcionando sola si nadie más aporta nada.
+    - **Al agregar una feature nueva que quiera sumar una línea a `/stats_grupo`**:
+      implementar `GroupStatsProviderPort`, exponer `group_stats_provider` en su
+      container, y agregarlo a la lista en el `ApplicationContainer`.
 
 ## Checklist para agregar una feature nueva
 

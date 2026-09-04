@@ -1,13 +1,14 @@
 import asyncio
 import logging
 
-from common.domain.model.user_info import UserInfo
 from common.domain.model.user_info_section import UserInfoSection
 from common.domain.spi.user_info_provider_port import UserInfoProviderPort
+from user_info.domain.model.user_info import UserInfo
 
 
 class UserInfoUsecase:
-    """Fans out to every registered UserInfoProviderPort and aggregates the sections available.
+    """Fans out to every registered UserInfoProviderPort (implemented by other features) and
+    aggregates the sections available.
 
     A provider failing (e.g. its DB is unreachable) only drops that one section instead
     of failing the whole /usuario_info response - same degrade-gracefully policy as the RSS

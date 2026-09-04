@@ -36,6 +36,14 @@ muestran solo esa sección.
 Muestra tu información acumulada en el bot (Autispuntos, actividad, etc.). Si \
 respondes (reply) al mensaje de otra persona, muestra la de ella en vez de la tuya.
 
+📊 <b>/stats_grupo</b> — <i>cualquiera</i>
+Estadísticas del grupo: mensajes de este mes y de siempre, participantes activos, \
+quién más escribió este mes, hora pico y día más activo.
+
+🗳️ <b>/encuesta pregunta | opción1 | opción2</b> — <i>cualquiera</i>
+Crea una encuesta nativa de Telegram (2 a 10 opciones, separadas por <code>|</code>) \
+con resultados en vivo.
+
 ❓ <b>/help</b> — <i>cualquiera</i>
 Muestra este mensaje.\
 """
