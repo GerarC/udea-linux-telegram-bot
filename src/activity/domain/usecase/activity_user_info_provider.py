@@ -4,7 +4,7 @@ from common.domain.spi.user_info_provider_port import UserInfoProviderPort
 
 
 class ActivityUserInfoProvider(UserInfoProviderPort):
-    """Adapts ActivityService into a UserInfoProviderPort section for /info_usuario."""
+    """Adapts ActivityService into a UserInfoProviderPort section for /usuario_info."""
 
     def __init__(self, activity_service: ActivityService) -> None:
         self._activity_service = activity_service

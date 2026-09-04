@@ -11,16 +11,16 @@ src/
 │   ├── application/bootstrap/container.py   # ApplicationContainer: agrega los containers de cada feature
 │   ├── domain/                                # "shared kernel": el único domain que otras features pueden importar
 │   │   ├── error/domain_error.py                # excepción base compartida (con user_message opcional)
-│   │   ├── api/user_info_service.py              # puerto de entrada de /info_usuario
-│   │   ├── model/{user_info,user_info_section}.py  # entidades de /info_usuario
-│   │   ├── spi/user_info_provider_port.py        # puerto que implementa cada feature para aportar a /info_usuario
+│   │   ├── api/user_info_service.py              # puerto de entrada de /usuario_info
+│   │   ├── model/{user_info,user_info_section}.py  # entidades de /usuario_info
+│   │   ├── spi/user_info_provider_port.py        # puerto que implementa cada feature para aportar a /usuario_info
 │   │   └── usecase/user_info_usecase.py           # hace fan-out a todos los providers registrados
 │   └── infrastructure/
 │       ├── configuration/settings.py          # env vars globales (token, DB, log level)
 │       ├── configuration/logging_config.py     # JSON logging (un log = una línea JSON, para Grafana/Loki)
 │       ├── input/tg/{bot,help_handler}.py       # arma la Application de Telegram, registra handlers y el menú "/"
 │       ├── input/tg/error_handler.py            # handler global (app.add_error_handler) para excepciones no atrapadas
-│       ├── input/tg/user_info_handler.py        # comando /info_usuario
+│       ├── input/tg/user_info_handler.py        # comando /usuario_info
 │       └── output/postgres/
 │           ├── pool.py                            # pool de asyncpg ÚNICO, compartido por todas las features
 │           ├── schema.py                           # crea group_members (identidad compartida chat_id+user_id)
@@ -50,7 +50,7 @@ src/
    `domain/spi/` y se implementa en `infrastructure/output/`.
    - **Excepción**: `common/domain/` es el único domain que una feature SÍ puede
      importar — es el "shared kernel" transversal (`DomainError`, y los contratos
-     de `/info_usuario`: `UserInfoProviderPort`, `UserInfoSection`). Sigue siendo solo
+     de `/usuario_info`: `UserInfoProviderPort`, `UserInfoSection`). Sigue siendo solo
      domain puro (sin librerías de terceros), así que no rompe la regla de pureza.
      Ninguna feature importa el `domain/` de OTRA feature directamente — solo
      `common/domain/`.
@@ -170,7 +170,7 @@ src/
     `common/infrastructure/input/tg/bot.py` (`app.add_handler(handler, group=1)`),
     documentando el porqué con un `NOTE:` — si no, el segundo handler nunca corre.
 
-12. **`/info_usuario` (fan-out a providers)**: es el comando transversal que agrega
+12. **`/usuario_info` (fan-out a providers)**: es el comando transversal que agrega
     info por-usuario de todas las features (Autispuntos, actividad, y lo que se
     agregue). Vive en `common` porque nadie más puede ser dueño de "el resumen de
     todas las features":
@@ -196,7 +196,7 @@ src/
       activity.user_info_provider, ...)` y arma `user_info_usecase =
       providers.Factory(UserInfoUsecase, providers=user_info_providers)`.
     - **Al agregar una feature nueva con datos por usuario**: si tiene sentido
-      mostrarla en `/info_usuario`, agregar su provider a esa lista — es el único paso
+      mostrarla en `/usuario_info`, agregar su provider a esa lista — es el único paso
       extra sobre el checklist normal de abajo.
 
 ## Checklist para agregar una feature nueva

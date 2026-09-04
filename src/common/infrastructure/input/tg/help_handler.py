@@ -32,7 +32,7 @@ Top 5 de quienes más mensajes envían. Sin argumento muestra el mes actual (con
 subió/bajó frente al mes pasado) y el histórico. <code>mes</code> o <code>total</code> \
 muestran solo esa sección.
 
-👤 <b>/info_usuario</b> — <i>cualquiera</i>
+👤 <b>/usuario_info</b> — <i>cualquiera</i>
 Muestra tu información acumulada en el bot (Autispuntos, actividad, etc.). Si \
 respondes (reply) al mensaje de otra persona, muestra la de ella en vez de la tuya.
 

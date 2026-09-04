@@ -17,7 +17,7 @@ BOT_COMMANDS = [
     BotCommand("insultar", "Insulta (con cariño) a un usuario"),
     BotCommand("cumplido", "Le dice un cumplido a un usuario"),
     BotCommand("mas_desocupados", "Top 5 de quienes más mensajes envían"),
-    BotCommand("info_usuario", "Muestra tu información acumulada en el bot (o la de alguien, con reply)"),
+    BotCommand("usuario_info", "Muestra tu información acumulada en el bot (o la de alguien, con reply)"),
 ]
 
 
@@ -47,7 +47,7 @@ def build_application(
     app.add_handler(CommandHandler("insultar", insultar_command))
     app.add_handler(CommandHandler("cumplido", cumplido_command))
     app.add_handler(CommandHandler("mas_desocupados", most_inactive_command))
-    app.add_handler(CommandHandler("info_usuario", user_info_command))
+    app.add_handler(CommandHandler("usuario_info", user_info_command))
     app.add_handler(CommandHandler("help", help_command))
     app.add_error_handler(error_handler)
     return app
