@@ -1,0 +1,13 @@
+from typing import Protocol
+
+
+class NewsHistoryPort(Protocol):
+    """Outbound port: per-chat cooldown and already-sent news items."""
+
+    def is_cooldown_active(self, chat_id: int) -> bool: ...
+
+    def mark_fired(self, chat_id: int) -> None: ...
+
+    def get_recent(self, chat_id: int) -> list[str]: ...
+
+    def mark_sent(self, chat_id: int, link: str) -> None: ...
