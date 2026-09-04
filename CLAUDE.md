@@ -9,10 +9,18 @@ src/
 ├── main.py                      # composition root: carga settings, arma el container raíz, arranca el bot
 ├── common/                      # transversal a todas las features
 │   ├── application/bootstrap/container.py   # ApplicationContainer: agrega los containers de cada feature
-│   ├── domain/error/domain_error.py          # excepción base compartida
+│   ├── domain/                                # "shared kernel": el único domain que otras features pueden importar
+│   │   ├── error/domain_error.py                # excepción base compartida (con user_message opcional)
+│   │   ├── api/user_info_service.py              # puerto de entrada de /info_usuario
+│   │   ├── model/{user_info,user_info_section}.py  # entidades de /info_usuario
+│   │   ├── spi/user_info_provider_port.py        # puerto que implementa cada feature para aportar a /info_usuario
+│   │   └── usecase/user_info_usecase.py           # hace fan-out a todos los providers registrados
 │   └── infrastructure/
 │       ├── configuration/settings.py          # env vars globales (token, DB, log level)
+│       ├── configuration/logging_config.py     # JSON logging (un log = una línea JSON, para Grafana/Loki)
 │       ├── input/tg/{bot,help_handler}.py       # arma la Application de Telegram, registra handlers y el menú "/"
+│       ├── input/tg/error_handler.py            # handler global (app.add_error_handler) para excepciones no atrapadas
+│       ├── input/tg/user_info_handler.py        # comando /info_usuario
 │       └── output/postgres/
 │           ├── pool.py                            # pool de asyncpg ÚNICO, compartido por todas las features
 │           ├── schema.py                           # crea group_members (identidad compartida chat_id+user_id)
@@ -36,9 +44,16 @@ src/
 
 1. **`domain/` no importa NUNCA una librería de terceros.** Ni `telegram`, ni
    `feedparser`, ni `asyncpg`, ni `dependency_injector`. Solo stdlib (`re`, `random`,
-   `dataclasses`, `typing.Protocol`, etc.) y otros módulos del propio `domain/` de esa
-   feature. Si una regla de negocio necesita algo externo (DB, HTTP, Telegram), se
-   define como un puerto en `domain/spi/` y se implementa en `infrastructure/output/`.
+   `dataclasses`, `typing.Protocol`, etc.), otros módulos del propio `domain/` de esa
+   feature, y `common/domain/*` (ver excepción abajo). Si una regla de negocio
+   necesita algo externo (DB, HTTP, Telegram), se define como un puerto en
+   `domain/spi/` y se implementa en `infrastructure/output/`.
+   - **Excepción**: `common/domain/` es el único domain que una feature SÍ puede
+     importar — es el "shared kernel" transversal (`DomainError`, y los contratos
+     de `/info_usuario`: `UserInfoProviderPort`, `UserInfoSection`). Sigue siendo solo
+     domain puro (sin librerías de terceros), así que no rompe la regla de pureza.
+     Ninguna feature importa el `domain/` de OTRA feature directamente — solo
+     `common/domain/`.
 
 2. **`api`, `model`, `spi`, `usecase`, `error`/`exception` son CARPETAS, no archivos.**
    Cada archivo dentro tiene un nombre descriptivo del concepto que contiene
@@ -88,6 +103,13 @@ src/
    — un password con caracteres especiales (`#`, `&`, `!`) rompe el parseo de URL.
    Y siempre `statement_cache_size=0` en `asyncpg` porque se usa el pooler de
    Supabase (PgBouncer en modo transacción, que no soporta prepared statements).
+   - Un `SUM(...)` (u otro agregado) en una query devuelve `Decimal` vía asyncpg,
+     no `int` — si el modelo de dominio espera `int`, castear explícito en el SQL
+     (`SUM(...)::bigint`), no confiar en que herede el tipo de la columna base.
+   - `LIMIT $n` con el parámetro en `NULL` equivale a "sin límite" en Postgres —
+     útil para traer un ranking completo (no solo el top N) cuando se necesita
+     calcular la posición de cualquier fila, no solo mostrar las primeras (ver
+     `activity/infrastructure/output/postgres/repository_adapter.py`).
 
 8. **Identidad de usuario compartida (`group_members`)**: si una feature necesita
    guardar "algo por usuario en un grupo" (puntos, badges, warnings, xp, lo que
@@ -118,6 +140,65 @@ src/
    un grupo hispanohablante — eso se queda en español y se documenta con un
    comentario `NOTE:` explicando por qué.
 
+10. **Errores de dominio con mensaje de usuario**: `DomainError`
+    (`common/domain/error/domain_error.py`) acepta un `user_message: str | None`
+    opcional en el constructor. Hay un `error_handler` global
+    (`common/infrastructure/input/tg/error_handler.py`, registrado con
+    `app.add_error_handler(...)` en `bot.py`) que captura cualquier excepción no
+    atrapada de cualquier handler de Telegram: si es un `DomainError` con
+    `user_message`, responde ese texto y loguea en `warning` (falla esperada); si
+    no, responde un mensaje genérico y loguea en `error` con el traceback (falla
+    inesperada).
+    - Una excepción de dominio de una feature (ej. `FetchingNewsError` en
+      `news/domain/error/`) define su propio `user_message` al construirse.
+      `common` nunca importa excepciones específicas de una feature — solo conoce
+      la base `DomainError`, así se mantiene desacoplado.
+    - No hace falta un `try/except` en cada handler de Telegram para los fallos
+      esperados de una feature: basta con lanzar la excepción de dominio y dejar
+      que el handler global la traduzca a un mensaje de usuario. Un `try/except`
+      puntual en el handler solo se justifica cuando el mensaje de error depende
+      de contexto que el handler tiene y la excepción no (ver
+      `points/infrastructure/input/tg/msg_handler.py`, el catch de
+      `TelegramError` al verificar si el usuario es admin).
+
+11. **Varios handlers sobre el mismo tipo de update (PTB)**: `python-telegram-bot`
+    solo ejecuta el primer handler que matchea dentro de un mismo `group` (default
+    `group=0`); no sigue probando los demás handlers de ese grupo. Si dos features
+    necesitan reaccionar al mismo tipo de update (ej. `news.on_message` responde a
+    triggers de texto, `activity.track_message` cuenta todos los mensajes de
+    texto), hay que registrarlas en `group`s distintos en
+    `common/infrastructure/input/tg/bot.py` (`app.add_handler(handler, group=1)`),
+    documentando el porqué con un `NOTE:` — si no, el segundo handler nunca corre.
+
+12. **`/info_usuario` (fan-out a providers)**: es el comando transversal que agrega
+    info por-usuario de todas las features (Autispuntos, actividad, y lo que se
+    agregue). Vive en `common` porque nadie más puede ser dueño de "el resumen de
+    todas las features":
+    - `common/domain/spi/user_info_provider_port.py` define `UserInfoProviderPort`
+      (`get_section(chat_id, user_id, username) -> UserInfoSection | None`, `None`
+      si la feature no tiene nada que mostrar para ese usuario).
+    - `common/domain/usecase/user_info_usecase.py` (`UserInfoUsecase`) recibe una
+      `list[UserInfoProviderPort]` en el constructor y llama a todos en paralelo
+      (`asyncio.gather`); si un provider individual lanza excepción, esa sección
+      se omite (se loguea) en vez de tumbar toda la respuesta — mismo criterio de
+      "degradar en vez de fallar todo" que usa `RssFeedAdapter` con feeds
+      individuales.
+    - Cada feature que tiene datos por usuario implementa su propio provider en
+      su **propio** `domain/usecase/` (ej.
+      `points/domain/usecase/points_user_info_provider.py`), envolviendo su
+      propio `<Feature>Service` — no accede a otra feature ni a Postgres
+      directamente, así que sigue siendo domain puro (ver excepción de la regla 1).
+      No termina en `_usecase` porque no es el caso de uso principal de la
+      feature, sino un adapter de un puerto ajeno (`common.domain.spi`).
+    - El container de cada feature expone `user_info_provider =
+      providers.Factory(<Feature>UserInfoProvider, ...)`. El `ApplicationContainer`
+      raíz los agrega con `providers.List(points.user_info_provider,
+      activity.user_info_provider, ...)` y arma `user_info_usecase =
+      providers.Factory(UserInfoUsecase, providers=user_info_providers)`.
+    - **Al agregar una feature nueva con datos por usuario**: si tiene sentido
+      mostrarla en `/info_usuario`, agregar su provider a esa lista — es el único paso
+      extra sobre el checklist normal de abajo.
+
 ## Checklist para agregar una feature nueva
 
 1. Crear `src/<feature>/{application/bootstrap,domain/{api,model,spi,usecase,utils},infrastructure/{input,output,configuration,utils}}`.
@@ -144,6 +225,12 @@ src/
 - Una prueba funcional real (no solo que compile): instanciar el container, resolver
   el usecase, y ejercitarlo — contra la base de datos real cuando la feature la usa,
   no solo con mocks. Limpiar cualquier fila de prueba insertada al terminar.
+  - Si el provider que se resuelve depende (directa o indirectamente) de un
+    `providers.Resource` async como el pool (`db_pool`), hay que **awaitearlo**
+    al resolverlo manualmente fuera del bot (`usecase = await
+    container.<feature>.usecase()`), no solo llamarlo — si no, se obtiene un
+    `Future`/`Task` en vez de la instancia real y falla con un `AttributeError`
+    confuso al primer método que se le llame.
 - Antes de cualquier operación destructiva sobre datos reales (DROP TABLE, DELETE
   sin filtrar bien, etc.), **inspeccionar el contenido primero**, no solo contar
   filas — ya hubo un incidente en este proyecto por confiar en un `count(*)` y

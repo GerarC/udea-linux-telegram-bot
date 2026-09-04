@@ -1,6 +1,7 @@
 from dependency_injector import containers, providers
 
 from points.domain.usecase.points_usecase import PointsUsecase
+from points.domain.usecase.points_user_info_provider import PointsUserInfoProvider
 from points.infrastructure.configuration.settings import load_points_settings
 from points.infrastructure.output.postgres.repository_adapter import PostgresPointsRepository
 from points.infrastructure.output.postgres.schema import ensure_schema
@@ -27,3 +28,5 @@ class PointsContainer(containers.DeclarativeContainer):
         repository_port=repository_port,
         ranking_limit=_settings.ranking_limit,
     )
+
+    user_info_provider = providers.Factory(PointsUserInfoProvider, points_service=usecase)

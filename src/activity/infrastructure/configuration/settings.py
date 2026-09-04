@@ -1,0 +1,14 @@
+import os
+from dataclasses import dataclass
+
+from activity.domain.utils.constants import DEFAULT_RANKING_LIMIT
+
+
+@dataclass(frozen=True)
+class ActivitySettings:
+    ranking_limit: int
+
+
+def load_activity_settings() -> ActivitySettings:
+    ranking_limit = int(os.environ.get("ACTIVITY_RANKING_LIMIT", DEFAULT_RANKING_LIMIT))
+    return ActivitySettings(ranking_limit=ranking_limit)

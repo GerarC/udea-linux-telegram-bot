@@ -3,6 +3,7 @@ import html
 from dependency_injector.wiring import Provide, inject
 from telegram import Update
 from telegram.constants import ParseMode
+from telegram.error import TelegramError
 from telegram.ext import ContextTypes
 
 from common.application.bootstrap.container import ApplicationContainer
@@ -56,7 +57,11 @@ async def grant_points_command(
     target = message.reply_to_message.from_user
     chat_id = message.chat_id
 
-    member = await context.bot.get_chat_member(chat_id, granter.id)
+    try:
+        member = await context.bot.get_chat_member(chat_id, granter.id)
+    except TelegramError:
+        await message.reply_text("No pude verificar si eres admin del grupo. Intenta de nuevo en un momento.")
+        return
     granter_is_admin = member.status in ("administrator", "creator")
 
     result = await points_service.grant_points(
