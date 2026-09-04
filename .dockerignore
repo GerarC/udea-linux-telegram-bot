@@ -1,0 +1,8 @@
+.venv
+.git
+.idea
+.env
+**/__pycache__
+sql
+README.md
+CLAUDE.md
