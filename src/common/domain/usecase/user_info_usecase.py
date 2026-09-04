@@ -10,7 +10,7 @@ class UserInfoUsecase:
     """Fans out to every registered UserInfoProviderPort and aggregates the sections available.
 
     A provider failing (e.g. its DB is unreachable) only drops that one section instead
-    of failing the whole /info_usuario response - same degrade-gracefully policy as the RSS
+    of failing the whole /usuario_info response - same degrade-gracefully policy as the RSS
     feed adapter uses for individual feeds.
     """
 

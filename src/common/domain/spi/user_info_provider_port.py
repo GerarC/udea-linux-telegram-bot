@@ -4,7 +4,7 @@ from common.domain.model.user_info_section import UserInfoSection
 
 
 class UserInfoProviderPort(Protocol):
-    """Implemented by any feature that wants to contribute a section to /info_usuario.
+    """Implemented by any feature that wants to contribute a section to /usuario_info.
 
     Registered into common's UserInfoUsecase via a providers.List in the root
     container - see ApplicationContainer.user_info_providers.
