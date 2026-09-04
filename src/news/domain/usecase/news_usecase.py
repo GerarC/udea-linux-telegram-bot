@@ -20,20 +20,20 @@ class NewsUsecase:
     async def handle_message(self, chat_id: int, text: str) -> NewsItem | None:
         if not self._trigger_pattern.search(text):
             return None
-        if self._history_port.is_cooldown_active(chat_id):
+        if await self._history_port.is_cooldown_active(chat_id):
             return None
-        self._history_port.mark_fired(chat_id)
+        await self._history_port.mark_fired(chat_id)
 
         items = await self._feed_port.fetch()
         if not items:
             return None
 
-        item = self._pick_item(chat_id, items)
-        self._history_port.mark_sent(chat_id, item.link)
+        item = await self._pick_item(chat_id, items)
+        await self._history_port.mark_sent(chat_id, item.link)
         return item
 
-    def _pick_item(self, chat_id: int, items: list[NewsItem]) -> NewsItem:
+    async def _pick_item(self, chat_id: int, items: list[NewsItem]) -> NewsItem:
         """Picks a news item, avoiding the ones already sent to this chat."""
-        seen = self._history_port.get_recent(chat_id)
+        seen = await self._history_port.get_recent(chat_id)
         fresh = [i for i in items if i.link not in seen]
         return random.choice(fresh or items)
