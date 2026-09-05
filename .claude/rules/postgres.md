@@ -20,6 +20,19 @@ paths:
   solo la posición de UN usuario es más eficiente usar `RANK() OVER (...)` en SQL
   en vez de traer el ranking completo (ver `get_position`/`get_monthly_stats` en
   `points`/`activity`).
+- **Nunca hacer check-then-act en dos llamadas separadas** (ej. `SELECT` para ver
+  si algo aplica y luego `INSERT/UPDATE` para marcarlo). El bot corre con
+  `concurrent_updates=True` (`common/infrastructure/input/tg/bot.py`), así que dos
+  updates concurrentes del mismo chat pueden pasar el check antes de que
+  cualquiera marque el estado. Hay que fusionarlo en un solo `UPSERT` atómico con
+  la condición en el `WHERE` del `DO UPDATE` y `RETURNING` para saber si "ganó":
+  `ON CONFLICT (...) DO UPDATE SET ... WHERE <condición> RETURNING ...` — el
+  `ON CONFLICT` bloquea la fila antes de evaluar el `WHERE`, así que una segunda
+  llamada concurrente ve el valor recién commiteado por la primera y falla la
+  condición correctamente en vez de ambas pasar (ver
+  `news/infrastructure/output/postgres/history_adapter.py`, `try_fire`, que
+  reemplazó un `is_cooldown_active` + `mark_fired` de dos pasos por exactamente
+  este patrón).
 
 ## Identidad de usuario compartida (`group_members`)
 

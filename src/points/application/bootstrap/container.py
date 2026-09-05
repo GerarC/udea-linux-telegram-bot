@@ -1,5 +1,6 @@
 from dependency_injector import containers, providers
 
+from points.domain.usecase.points_group_stats_provider import PointsGroupStatsProvider
 from points.domain.usecase.points_usecase import PointsUsecase
 from points.domain.usecase.points_user_info_provider import PointsUserInfoProvider
 from points.infrastructure.configuration.settings import load_points_settings
@@ -30,3 +31,5 @@ class PointsContainer(containers.DeclarativeContainer):
     )
 
     user_info_provider = providers.Factory(PointsUserInfoProvider, points_service=usecase)
+
+    group_stats_provider = providers.Factory(PointsGroupStatsProvider, points_service=usecase)

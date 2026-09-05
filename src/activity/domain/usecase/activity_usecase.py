@@ -46,11 +46,11 @@ class ActivityUsecase:
 
     async def get_monthly_ranking(self, chat_id: int, limit: int | None = None) -> list[MonthlyRankingEntry]:
         current_month = self._current_month()
-        current_ranking = await self._repository_port.get_monthly_ranking(
-            chat_id, current_month, limit or self._ranking_limit
+        # NOTE: independent reads, run concurrently instead of round-tripping twice in serial.
+        current_ranking, previous_ranking = await asyncio.gather(
+            self._repository_port.get_monthly_ranking(chat_id, current_month, limit or self._ranking_limit),
+            self._repository_port.get_monthly_ranking(chat_id, _previous_month(current_month)),
         )
-
-        previous_ranking = await self._repository_port.get_monthly_ranking(chat_id, _previous_month(current_month))
         previous_positions = {
             activity.user_id: position for position, activity in enumerate(previous_ranking, start=1)
         }
@@ -75,16 +75,22 @@ class ActivityUsecase:
 
     async def get_group_stats(self, chat_id: int) -> GroupStats:
         current_month = self._current_month()
-        messages_this_month, participants = await self._repository_port.get_chat_monthly_totals(
-            chat_id, current_month
-        )
-        messages_all_time = await self._repository_port.get_chat_all_time_total(chat_id)
-        top_ranking = await self._repository_port.get_monthly_ranking(chat_id, current_month, limit=1)
-        peak_hour = await self._repository_port.get_peak_hour(chat_id)
-        peak_weekday = await self._repository_port.get_peak_weekday(chat_id)
-
-        extra_line_results = await asyncio.gather(
-            *(self._safe_stat_line(provider, chat_id) for provider in self._group_stats_providers)
+        # NOTE: five independent reads (plus the provider fan-out) - run them all
+        # concurrently instead of five serial round-trips to Postgres.
+        (
+            (messages_this_month, participants),
+            messages_all_time,
+            top_ranking,
+            peak_hour,
+            peak_weekday,
+            extra_line_results,
+        ) = await asyncio.gather(
+            self._repository_port.get_chat_monthly_totals(chat_id, current_month),
+            self._repository_port.get_chat_all_time_total(chat_id),
+            self._repository_port.get_monthly_ranking(chat_id, current_month, limit=1),
+            self._repository_port.get_peak_hour(chat_id),
+            self._repository_port.get_peak_weekday(chat_id),
+            asyncio.gather(*(self._safe_stat_line(provider, chat_id) for provider in self._group_stats_providers)),
         )
 
         return GroupStats(

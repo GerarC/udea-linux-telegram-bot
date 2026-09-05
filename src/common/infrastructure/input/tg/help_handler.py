@@ -42,7 +42,7 @@ quién más escribió este mes, hora pico y día más activo.
 
 🗳️ <b>/encuesta pregunta | opción1 | opción2</b> — <i>cualquiera</i>
 Crea una encuesta nativa de Telegram (2 a 10 opciones, separadas por <code>|</code>) \
-con resultados en vivo.
+con resultados en vivo. No es anónima: se ve quién votó cada opción.
 
 ❓ <b>/help</b> — <i>cualquiera</i>
 Muestra este mensaje.\
