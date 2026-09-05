@@ -32,6 +32,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
     # NOTE: /stats_grupo (activity) shows its own numbers plus one line per feature
     # that implements GroupStatsProviderPort - add new ones here as they show up.
     group_stats_providers = providers.List(
+        points.group_stats_provider,
         polls.group_stats_provider,
     )
 

@@ -32,7 +32,7 @@ async def encuesta_command(
         chat_id=message.chat_id,
         question=poll.question,
         options=poll.options,
-        is_anonymous=True,
+        is_anonymous=False,
         allows_multiple_answers=False,
     )
     await poll_service.record_poll(message.chat_id, user.id, user.username or user.full_name, poll.question)

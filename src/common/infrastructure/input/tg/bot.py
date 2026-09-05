@@ -33,7 +33,13 @@ def build_application(
     post_init=None,
     post_shutdown=None,
 ) -> Application:
-    builder = Application.builder().token(token)
+    # NOTE: concurrent_updates=True runs each update in its own asyncio task instead
+    # of processing them one at a time - a slow command (e.g. news' RSS fetch) no
+    # longer blocks every other message in the group. Safe here: the only shared
+    # in-memory state (RssFeedAdapter's cache) already uses an asyncio.Lock, and
+    # everything else goes through the asyncpg pool, which is built for concurrent
+    # use (each task gets its own connection, capped by the pool's max_size).
+    builder = Application.builder().token(token).concurrent_updates(True)
     if post_init is not None:
         builder = builder.post_init(post_init)
     if post_shutdown is not None:

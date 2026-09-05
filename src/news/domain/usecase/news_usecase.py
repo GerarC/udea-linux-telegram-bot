@@ -20,9 +20,8 @@ class NewsUsecase:
     async def handle_message(self, chat_id: int, text: str) -> NewsItem | None:
         if not self._trigger_pattern.search(text):
             return None
-        if await self._history_port.is_cooldown_active(chat_id):
+        if not await self._history_port.try_fire(chat_id):
             return None
-        await self._history_port.mark_fired(chat_id)
 
         items = await self._feed_port.fetch()
         if not items:

@@ -10,12 +10,16 @@ class PointsUserInfoProvider(UserInfoProviderPort):
         self._points_service = points_service
 
     async def get_section(self, chat_id: int, user_id: int, username: str) -> UserInfoSection | None:
-        entry = await self._points_service.get_points(chat_id, user_id, username)
-        if entry.user_points.points == 0:
+        # NOTE: gate on get_position (None means no row at all), not points == 0 -
+        # points can legitimately be exactly 0 with a real row (e.g. +5 then -5).
+        position = await self._points_service.get_position(chat_id, user_id)
+        if position is None:
             return None
 
-        lines = [f"Autispuntos: {entry.user_points.points}", f"Nivel de autismo: {entry.level_label}"]
-        position = await self._points_service.get_position(chat_id, user_id)
-        if position is not None:
-            lines.append(f"Posición en el ranking: #{position}")
+        entry = await self._points_service.get_points(chat_id, user_id, username)
+        lines = [
+            f"Autispuntos: {entry.user_points.points}",
+            f"Nivel de autismo: {entry.level_label}",
+            f"Posición en el ranking: #{position}",
+        ]
         return UserInfoSection(title="🧠 Autispuntos", lines=lines)

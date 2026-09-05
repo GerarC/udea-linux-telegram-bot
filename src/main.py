@@ -26,9 +26,9 @@ def main() -> None:
         ]
     )
 
-    async def on_startup(app) -> None:
+    async def on_startup(application) -> None:
         await container.init_resources()
-        await register_commands(app)
+        await register_commands(application)
 
     async def on_shutdown(_app) -> None:
         await container.shutdown_resources()
