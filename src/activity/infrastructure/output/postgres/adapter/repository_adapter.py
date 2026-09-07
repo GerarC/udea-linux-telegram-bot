@@ -13,8 +13,8 @@ from activity.infrastructure.output.postgres.utils.constants import (
     GET_MONTHLY_STATS_SQL,
     GET_PEAK_HOUR_SQL,
     GET_PEAK_WEEKDAY_SQL,
+    REGISTER_DAILY_ACTIVITY_SQL,
     REGISTER_MESSAGE_SQL,
-    REGISTER_TIMELINE_SQL,
 )
 from common.infrastructure.output.postgres.utils.helpers import upsert_member
 
@@ -26,12 +26,12 @@ class PostgresActivityRepository(ActivityRepositoryPort):
         self._pool = pool
 
     async def register_message(
-        self, chat_id: int, user_id: int, username: str, period_month: date, hour_of_day: int, weekday: int
+        self, chat_id: int, user_id: int, username: str, period_month: date, hour_of_day: int, activity_date: date
     ) -> None:
         async with self._pool.acquire() as conn, conn.transaction():
             await upsert_member(conn, chat_id, user_id, username)
             await conn.execute(REGISTER_MESSAGE_SQL, chat_id, user_id, period_month)
-            await conn.execute(REGISTER_TIMELINE_SQL, chat_id, hour_of_day, weekday)
+            await conn.execute(REGISTER_DAILY_ACTIVITY_SQL, chat_id, activity_date, hour_of_day)
 
     async def get_monthly_ranking(
         self, chat_id: int, period_month: date, limit: int | None = None

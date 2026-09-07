@@ -15,5 +15,5 @@ class ActivityUsecase(ActivityService):
         now = now_in(self._zone)
         period_month = now.date().replace(day=1)
         await self._repository_port.register_message(
-            chat_id, user_id, username, period_month, now.hour, now.weekday()
+            chat_id, user_id, username, period_month, now.hour, now.date()
         )
