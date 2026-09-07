@@ -8,7 +8,7 @@ class ActivityRepositoryPort(Protocol):
     """Outbound port: persists and reads per-chat, per-user message counts, broken down by month."""
 
     async def register_message(
-        self, chat_id: int, user_id: int, username: str, period_month: date, hour_of_day: int, weekday: int
+        self, chat_id: int, user_id: int, username: str, period_month: date, hour_of_day: int, activity_date: date
     ) -> None: ...
 
     async def get_monthly_ranking(
