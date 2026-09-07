@@ -15,14 +15,14 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     chat_id = update.effective_chat.id if isinstance(update, Update) and update.effective_chat else None
     log_extra = {"event": "handler_exception", "chat_id": chat_id, "error_type": type(error).__name__}
 
-    is_domain_error = isinstance(error, DomainError) and error.user_message
-    if is_domain_error:
+    if isinstance(error, DomainError) and error.user_message:
         logging.warning("Domain error while processing update: %s", error, extra=log_extra)
+        user_message = error.user_message
     else:
         logging.error("Unhandled exception while processing update", exc_info=error, extra=log_extra)
+        user_message = GENERIC_ERROR_MESSAGE
 
     if not (isinstance(update, Update) and update.effective_message is not None):
         return
 
-    user_message = error.user_message if is_domain_error else GENERIC_ERROR_MESSAGE
     await update.effective_message.reply_text(user_message)

@@ -6,7 +6,8 @@ from telegram.error import TelegramError
 from telegram.ext import ContextTypes
 
 from common.application.bootstrap.container import ApplicationContainer
-from polls.domain.api.poll_service import PollService
+from polls.domain.api.poll_parser_service import PollParserService
+from polls.domain.api.poll_recorder_service import PollRecorderService
 
 USAGE_TEXT = "Uso: /encuesta pregunta | opción1 | opción2 [| opción3 ...] (2 a 10 opciones)"
 
@@ -15,7 +16,8 @@ USAGE_TEXT = "Uso: /encuesta pregunta | opción1 | opción2 [| opción3 ...] (2 
 async def encuesta_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    poll_service: PollService = Provide[ApplicationContainer.polls.usecase],
+    poll_parser_service: PollParserService = Provide[ApplicationContainer.polls.parser_usecase],
+    poll_recorder_service: PollRecorderService = Provide[ApplicationContainer.polls.recorder_usecase],
 ) -> None:
     message = update.effective_message
     user = update.effective_user
@@ -27,7 +29,7 @@ async def encuesta_command(
         await message.reply_text(USAGE_TEXT)
         return
 
-    poll = poll_service.parse_poll(raw)
+    poll = poll_parser_service.parse_poll(raw)
     await context.bot.send_poll(
         chat_id=message.chat_id,
         question=poll.question,
@@ -35,7 +37,7 @@ async def encuesta_command(
         is_anonymous=False,
         allows_multiple_answers=False,
     )
-    await poll_service.record_poll(message.chat_id, user.id, user.username or user.full_name, poll.question)
+    await poll_recorder_service.record_poll(message.chat_id, user.id, user.username or user.full_name, poll.question)
 
     try:
         await message.delete()
