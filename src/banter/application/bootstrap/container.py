@@ -1,7 +1,8 @@
 from dependency_injector import containers, providers
 
-from banter.domain.usecase.banter_usecase import BanterUsecase
-from banter.infrastructure.output.postgres.repository_adapter import PostgresBanterRepository
+from banter.domain.usecase.compliment_usecase import ComplimentUsecase
+from banter.domain.usecase.insult_usecase import InsultUsecase
+from banter.infrastructure.output.postgres.adapter.repository_adapter import PostgresBanterRepository
 from banter.infrastructure.output.postgres.schema import ensure_schema
 
 
@@ -11,7 +12,7 @@ async def _ensure_banter_schema(pool):
 
 
 class BanterContainer(containers.DeclarativeContainer):
-    """Wiring for the banter feature: builds the adapters and exposes domain.api.BanterService."""
+    """Wiring for the banter feature: one usecase per domain.api Protocol (one operation each)."""
 
     pool = providers.Dependency()
 
@@ -19,4 +20,6 @@ class BanterContainer(containers.DeclarativeContainer):
 
     repository_port = providers.Singleton(PostgresBanterRepository, pool=pool)
 
-    usecase = providers.Factory(BanterUsecase, phrase_port=repository_port)
+    insult_usecase = providers.Factory(InsultUsecase, phrase_port=repository_port)
+
+    compliment_usecase = providers.Factory(ComplimentUsecase, phrase_port=repository_port)

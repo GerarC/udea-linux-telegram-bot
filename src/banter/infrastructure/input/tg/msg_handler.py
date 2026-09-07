@@ -2,7 +2,8 @@ from dependency_injector.wiring import Provide, inject
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from banter.domain.api.banter_service import BanterService
+from banter.domain.api.compliment_service import ComplimentService
+from banter.domain.api.insult_service import InsultService
 from common.application.bootstrap.container import ApplicationContainer
 
 
@@ -10,7 +11,7 @@ from common.application.bootstrap.container import ApplicationContainer
 async def insultar_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    banter_service: BanterService = Provide[ApplicationContainer.banter.usecase],
+    insult_service: InsultService = Provide[ApplicationContainer.banter.insult_usecase],
 ) -> None:
     message = update.effective_message
     if message is None:
@@ -21,7 +22,7 @@ async def insultar_command(
         return
 
     usuario = context.args[0]
-    insulto = await banter_service.insult()
+    insulto = await insult_service.insult()
     await message.reply_text(f"{usuario}, {insulto}")
 
 
@@ -29,7 +30,7 @@ async def insultar_command(
 async def cumplido_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    banter_service: BanterService = Provide[ApplicationContainer.banter.usecase],
+    compliment_service: ComplimentService = Provide[ApplicationContainer.banter.compliment_usecase],
 ) -> None:
     message = update.effective_message
     if message is None:
@@ -40,5 +41,5 @@ async def cumplido_command(
         return
 
     usuario = context.args[0]
-    cumplido = await banter_service.compliment()
+    cumplido = await compliment_service.compliment()
     await message.reply_text(f"{usuario}, {cumplido}")

@@ -1,17 +1,19 @@
-from activity.domain.api.activity_service import ActivityService
+from activity.domain.api.all_time_stats_service import AllTimeStatsService
+from activity.domain.api.monthly_stats_service import MonthlyStatsService
 from common.domain.model.user_info_section import UserInfoSection
 from common.domain.spi.user_info_provider_port import UserInfoProviderPort
 
 
 class ActivityUserInfoProvider(UserInfoProviderPort):
-    """Adapts ActivityService into a UserInfoProviderPort section for /usuario_info."""
+    """Adapts MonthlyStatsService + AllTimeStatsService into a UserInfoProviderPort section for /usuario_info."""
 
-    def __init__(self, activity_service: ActivityService) -> None:
-        self._activity_service = activity_service
+    def __init__(self, monthly_stats_service: MonthlyStatsService, all_time_stats_service: AllTimeStatsService) -> None:
+        self._monthly_stats_service = monthly_stats_service
+        self._all_time_stats_service = all_time_stats_service
 
     async def get_section(self, chat_id: int, user_id: int, username: str) -> UserInfoSection | None:
-        monthly = await self._activity_service.get_monthly_stats(chat_id, user_id)
-        all_time = await self._activity_service.get_all_time_stats(chat_id, user_id)
+        monthly = await self._monthly_stats_service.get_monthly_stats(chat_id, user_id)
+        all_time = await self._all_time_stats_service.get_all_time_stats(chat_id, user_id)
         if monthly is None and all_time is None:
             return None
 

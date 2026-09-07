@@ -8,6 +8,8 @@ from telegram.ext import ContextTypes
 
 from common.application.bootstrap.container import ApplicationContainer
 from points.domain.api.points_service import PointsService
+from points.domain.api.ranking_service import RankingService
+from points.domain.api.user_points_service import UserPointsService
 from points.domain.model.ranking_entry import RankingEntry
 
 RANK_EMOJI_LEVELS = ("🧠🧠🧠", "🧠🧠", "🧠")
@@ -94,13 +96,13 @@ async def grant_points_command(
 async def ranking_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    points_service: PointsService = Provide[ApplicationContainer.points.usecase],
+    ranking_service: RankingService = Provide[ApplicationContainer.points.ranking_usecase],
 ) -> None:
     message = update.effective_message
     if message is None:
         return
 
-    ranking = await points_service.get_ranking(message.chat_id)
+    ranking = await ranking_service.get_ranking(message.chat_id)
     if not ranking:
         await message.reply_text("Todavía nadie tiene Autispuntos en este grupo.")
         return
@@ -112,7 +114,7 @@ async def ranking_command(
 async def my_points_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    points_service: PointsService = Provide[ApplicationContainer.points.usecase],
+    user_points_service: UserPointsService = Provide[ApplicationContainer.points.user_points_usecase],
 ) -> None:
     message = update.effective_message
     if message is None:
@@ -122,7 +124,7 @@ async def my_points_command(
     if target is None:
         return
 
-    entry = await points_service.get_points(
+    entry = await user_points_service.get_points(
         chat_id=message.chat_id,
         user_id=target.id,
         username=target.username or target.full_name,

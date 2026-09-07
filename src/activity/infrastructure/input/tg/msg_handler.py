@@ -6,6 +6,9 @@ from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
 from activity.domain.api.activity_service import ActivityService
+from activity.domain.api.all_time_ranking_service import AllTimeRankingService
+from activity.domain.api.group_stats_service import GroupStatsService
+from activity.domain.api.monthly_ranking_service import MonthlyRankingService
 from activity.domain.model.group_stats import GroupStats
 from activity.domain.model.monthly_ranking_entry import MonthlyRankingEntry
 from activity.domain.model.user_activity import UserActivity
@@ -92,7 +95,8 @@ async def track_message(
 async def most_inactive_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    activity_service: ActivityService = Provide[ApplicationContainer.activity.usecase],
+    monthly_ranking_service: MonthlyRankingService = Provide[ApplicationContainer.activity.monthly_ranking_usecase],
+    all_time_ranking_service: AllTimeRankingService = Provide[ApplicationContainer.activity.all_time_ranking_usecase],
 ) -> None:
     message = update.effective_message
     if message is None:
@@ -105,9 +109,9 @@ async def most_inactive_command(
 
     sections = []
     if scope in (None, "mes"):
-        sections.append(_format_monthly(await activity_service.get_monthly_ranking(message.chat_id)))
+        sections.append(_format_monthly(await monthly_ranking_service.get_monthly_ranking(message.chat_id)))
     if scope in (None, "total"):
-        sections.append(_format_all_time(await activity_service.get_all_time_ranking(message.chat_id)))
+        sections.append(_format_all_time(await all_time_ranking_service.get_all_time_ranking(message.chat_id)))
 
     await message.reply_text("\n\n".join(sections), parse_mode=ParseMode.HTML)
 
@@ -116,13 +120,13 @@ async def most_inactive_command(
 async def group_stats_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    activity_service: ActivityService = Provide[ApplicationContainer.activity.usecase],
+    group_stats_service: GroupStatsService = Provide[ApplicationContainer.activity.group_stats_usecase],
 ) -> None:
     message = update.effective_message
     if message is None:
         return
 
-    stats = await activity_service.get_group_stats(message.chat_id)
+    stats = await group_stats_service.get_group_stats(message.chat_id)
     if stats.messages_all_time == 0:
         await message.reply_text("Todavía no hay mensajes registrados en este grupo.")
         return

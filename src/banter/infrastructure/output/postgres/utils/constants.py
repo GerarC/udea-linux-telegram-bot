@@ -1,0 +1,17 @@
+CREATE_INSULTS_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS banter_insults (
+    id SERIAL PRIMARY KEY,
+    phrase TEXT NOT NULL
+)
+"""
+
+CREATE_COMPLIMENTS_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS banter_compliments (
+    id SERIAL PRIMARY KEY,
+    phrase TEXT NOT NULL
+)
+"""
+
+GET_RANDOM_INSULT_SQL = "SELECT phrase FROM banter_insults ORDER BY random() LIMIT 1"
+
+GET_RANDOM_COMPLIMENT_SQL = "SELECT phrase FROM banter_compliments ORDER BY random() LIMIT 1"
