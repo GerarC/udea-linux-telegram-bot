@@ -1,0 +1,10 @@
+CREATE_HOROSCOPE_PHRASES_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS horoscope_phrases (
+    id SERIAL PRIMARY KEY,
+    phrase TEXT NOT NULL
+)
+"""
+
+GET_PHRASE_COUNT_SQL = "SELECT COUNT(*) FROM horoscope_phrases"
+
+GET_PHRASE_BY_OFFSET_SQL = "SELECT phrase FROM horoscope_phrases ORDER BY id LIMIT 1 OFFSET $1"

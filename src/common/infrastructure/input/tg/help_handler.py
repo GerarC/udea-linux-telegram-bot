@@ -44,6 +44,11 @@ quién más escribió este mes, hora pico y día más activo.
 Crea una encuesta nativa de Telegram (2 a 10 opciones, separadas por <code>|</code>) \
 con resultados en vivo. No es anónima: se ve quién votó cada opción.
 
+🔮 <b>/horoscopo signo</b> — <i>cualquiera</i>
+Muestra el horóscopo del día (mood, color, número y hora de la suerte, \
+compatibilidad) para el signo que indiques. No es aleatorio: es el mismo \
+para todos durante el día, y cambia al día siguiente.
+
 ❓ <b>/help</b> — <i>cualquiera</i>
 Muestra este mensaje.\
 """

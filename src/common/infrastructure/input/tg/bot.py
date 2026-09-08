@@ -5,6 +5,7 @@ from activity.infrastructure.input.tg.msg_handler import group_stats_command, mo
 from banter.infrastructure.input.tg.msg_handler import cumplido_command, insultar_command
 from common.infrastructure.input.tg.error_handler import error_handler
 from common.infrastructure.input.tg.help_handler import help_command
+from horoscope.infrastructure.input.tg.msg_handler import horoscopo_command
 from news.infrastructure.input.tg.msg_handler import on_message
 from points.infrastructure.input.tg.msg_handler import grant_points_command, my_points_command, ranking_command
 from polls.infrastructure.input.tg.msg_handler import encuesta_command
@@ -21,6 +22,7 @@ BOT_COMMANDS = [
     BotCommand("usuario_info", "Muestra tu información acumulada en el bot (o la de alguien, con reply)"),
     BotCommand("stats_grupo", "Estadísticas del grupo: mensajes, hora pico, día más activo"),
     BotCommand("encuesta", "Crea una encuesta: /encuesta pregunta | opción1 | opción2"),
+    BotCommand("horoscopo", "Muestra el horóscopo del día para un signo"),
 ]
 
 
@@ -59,6 +61,7 @@ def build_application(
     app.add_handler(CommandHandler("usuario_info", user_info_command))
     app.add_handler(CommandHandler("stats_grupo", group_stats_command))
     app.add_handler(CommandHandler("encuesta", encuesta_command))
+    app.add_handler(CommandHandler("horoscopo", horoscopo_command))
     app.add_handler(CommandHandler("help", help_command))
     app.add_error_handler(error_handler)
     return app

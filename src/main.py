@@ -23,6 +23,7 @@ def main() -> None:
             "activity.infrastructure.input.tg.msg_handler",
             "user_info.infrastructure.input.tg.msg_handler",
             "polls.infrastructure.input.tg.msg_handler",
+            "horoscope.infrastructure.input.tg.msg_handler",
         ]
     )
 
