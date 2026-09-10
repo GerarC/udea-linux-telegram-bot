@@ -6,8 +6,10 @@ from common.infrastructure.configuration.settings import load_settings
 from common.infrastructure.output.postgres.pool import init_pool
 from horoscope.application.bootstrap.container import HoroscopeContainer
 from news.application.bootstrap.container import NewsContainer
+from package_info.application.bootstrap.container import PackageInfoContainer
 from points.application.bootstrap.container import PointsContainer
 from polls.application.bootstrap.container import PollsContainer
+from reminders.application.bootstrap.container import RemindersContainer
 from user_info.application.bootstrap.container import UserInfoContainer
 
 _settings = load_settings()
@@ -30,6 +32,8 @@ class ApplicationContainer(containers.DeclarativeContainer):
     banter = providers.Container(BanterContainer, pool=db_pool)
     polls = providers.Container(PollsContainer, pool=db_pool)
     horoscope = providers.Container(HoroscopeContainer, pool=db_pool)
+    package_info = providers.Container(PackageInfoContainer)
+    reminders = providers.Container(RemindersContainer, pool=db_pool)
 
     # NOTE: /stats_grupo (activity) shows its own numbers plus one line per feature
     # that implements GroupStatsProviderPort - add new ones here as they show up.

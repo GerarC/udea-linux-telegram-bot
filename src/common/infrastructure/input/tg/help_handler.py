@@ -22,10 +22,12 @@ Muestra cuántos Autispuntos tienes. Si respondes (reply) al mensaje de otra \
 persona, muestra los de ella en vez de los tuyos.
 
 😈 <b>/insultar @usuario</b> — <i>cualquiera</i>
-Le manda un insulto random (con cariño) a quien menciones.
+Le manda un insulto random (con cariño) a quien menciones, o responde (reply) \
+al mensaje de la persona (el reply tiene prioridad si haces ambas cosas).
 
 🥰 <b>/cumplido @usuario</b> — <i>cualquiera</i>
-Le manda un cumplido random a quien menciones.
+Le manda un cumplido random a quien menciones, o responde (reply) al mensaje \
+de la persona (el reply tiene prioridad si haces ambas cosas).
 
 📢 <b>/mas_desocupados [mes|total]</b> — <i>cualquiera</i>
 Top 5 de quienes más mensajes envían. Sin argumento muestra el mes actual (con quién \
@@ -48,6 +50,15 @@ con resultados en vivo. No es anónima: se ve quién votó cada opción.
 Muestra el horóscopo del día (mood, color, número y hora de la suerte, \
 compatibilidad) para el signo que indiques. No es aleatorio: es el mismo \
 para todos durante el día, y cambia al día siguiente.
+
+📦 <b>/paquete nombre</b> — <i>cualquiera</i>
+Busca el paquete en los repositorios de Arch Linux y muestra su descripción, \
+versión y repo.
+
+⏰ <b>/recordar mensaje en N min|horas|días</b> — <i>cualquiera</i>
+Te manda ese mensaje de vuelta cuando se cumpla el tiempo. Ej: <code>/recordar \
+sacar la basura en 30 min</code>, <code>/recordar reunión en 2 horas</code>. \
+Sobrevive un reinicio del bot.
 
 ❓ <b>/help</b> — <i>cualquiera</i>
 Muestra este mensaje.\

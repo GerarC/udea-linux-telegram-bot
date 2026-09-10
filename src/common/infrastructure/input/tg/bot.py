@@ -7,8 +7,10 @@ from common.infrastructure.input.tg.error_handler import error_handler
 from common.infrastructure.input.tg.help_handler import help_command
 from horoscope.infrastructure.input.tg.msg_handler import horoscopo_command
 from news.infrastructure.input.tg.msg_handler import on_message
+from package_info.infrastructure.input.tg.msg_handler import paquete_command
 from points.infrastructure.input.tg.msg_handler import grant_points_command, my_points_command, ranking_command
 from polls.infrastructure.input.tg.msg_handler import encuesta_command
+from reminders.infrastructure.input.tg.msg_handler import recordar_command
 from user_info.infrastructure.input.tg.msg_handler import user_info_command
 
 BOT_COMMANDS = [
@@ -23,6 +25,8 @@ BOT_COMMANDS = [
     BotCommand("stats_grupo", "Estadísticas del grupo: mensajes, hora pico, día más activo"),
     BotCommand("encuesta", "Crea una encuesta: /encuesta pregunta | opción1 | opción2"),
     BotCommand("horoscopo", "Muestra el horóscopo del día para un signo"),
+    BotCommand("paquete", "Busca un paquete en los repositorios de Arch Linux"),
+    BotCommand("recordar", "Programa un recordatorio: /recordar mensaje en N min"),
 ]
 
 
@@ -62,6 +66,8 @@ def build_application(
     app.add_handler(CommandHandler("stats_grupo", group_stats_command))
     app.add_handler(CommandHandler("encuesta", encuesta_command))
     app.add_handler(CommandHandler("horoscopo", horoscopo_command))
+    app.add_handler(CommandHandler("paquete", paquete_command))
+    app.add_handler(CommandHandler("recordar", recordar_command))
     app.add_handler(CommandHandler("help", help_command))
     app.add_error_handler(error_handler)
     return app
