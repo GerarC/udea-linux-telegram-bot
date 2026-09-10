@@ -1,3 +1,4 @@
+import logging
 from zoneinfo import ZoneInfo
 
 from dependency_injector.wiring import Provide, inject
@@ -9,6 +10,8 @@ from reminders.domain.api.reminder_parser_service import ReminderParserService
 from reminders.domain.api.reminder_service import ReminderService
 from reminders.domain.utils.constants import TIMEZONE, USAGE_EXAMPLE
 from reminders.infrastructure.input.tg.job_handler import fire_reminder_job
+
+logger = logging.getLogger(__name__)
 
 
 @inject
@@ -38,6 +41,17 @@ async def recordar_command(
         when=parsed.minutes * 60,
         data={"reminder_id": reminder.id},
         name=f"reminder:{reminder.id}",
+    )
+
+    logger.info(
+        "Reminder scheduled",
+        extra={
+            "event": "reminder_scheduled",
+            "chat_id": message.chat_id,
+            "user_id": user.id,
+            "reminder_id": reminder.id,
+            "minutes": parsed.minutes,
+        },
     )
 
     local_time = reminder.remind_at.astimezone(ZoneInfo(TIMEZONE)).strftime("%d/%m %H:%M")

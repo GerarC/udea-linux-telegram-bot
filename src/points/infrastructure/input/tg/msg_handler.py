@@ -1,4 +1,5 @@
 import html
+import logging
 
 from dependency_injector.wiring import Provide, inject
 from telegram import Update
@@ -11,6 +12,8 @@ from points.domain.api.points_service import PointsService
 from points.domain.api.ranking_service import RankingService
 from points.domain.api.user_points_service import UserPointsService
 from points.domain.model.ranking_entry import RankingEntry
+
+logger = logging.getLogger(__name__)
 
 RANK_EMOJI_LEVELS = ("🧠🧠🧠", "🧠🧠", "🧠")
 
@@ -78,6 +81,17 @@ async def grant_points_command(
         await message.reply_text("Solo los admins pueden otorgar Autispuntos.")
         return
 
+    logger.info(
+        "Points granted",
+        extra={
+            "event": "points_granted",
+            "chat_id": chat_id,
+            "granter_id": granter.id,
+            "target_id": target.id,
+            "amount": amount,
+        },
+    )
+
     granter_name = html.escape(_display_name(granter))
     target_name = html.escape(_display_name(target))
     verb = "le ha otorgado" if amount >= 0 else "le ha quitado"
@@ -107,6 +121,7 @@ async def ranking_command(
         await message.reply_text("Todavía nadie tiene Autispuntos en este grupo.")
         return
 
+    logger.info("Ranking viewed", extra={"event": "ranking_viewed", "chat_id": message.chat_id})
     await message.reply_text(_format_ranking(ranking), parse_mode=ParseMode.HTML)
 
 
@@ -131,5 +146,8 @@ async def my_points_command(
     )
     name = html.escape(_display_name(target))
     level = html.escape(entry.level_label)
+    logger.info(
+        "Points viewed", extra={"event": "points_viewed", "chat_id": message.chat_id, "target_id": target.id}
+    )
     text_body = f"{name} tiene {entry.user_points.points} Autispuntos.\nNivel de autismo: {level}."
     await message.reply_text(text_body, parse_mode=ParseMode.HTML)

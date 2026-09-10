@@ -1,4 +1,5 @@
 import html
+import logging
 
 from dependency_injector.wiring import Provide, inject
 from telegram import Update
@@ -7,6 +8,8 @@ from telegram.ext import ContextTypes
 
 from common.application.bootstrap.container import ApplicationContainer
 from news.domain.api.news_service import NewsService
+
+logger = logging.getLogger(__name__)
 
 
 @inject
@@ -23,6 +26,10 @@ async def on_message(
     if item is None:
         return
 
+    logger.info(
+        "News item sent",
+        extra={"event": "news_sent", "chat_id": message.chat_id, "source": item.source},
+    )
     text_body = (
         f"📰 <b>{html.escape(item.title)}</b>\n"
         f"<i>{html.escape(item.source)}</i>\n"

@@ -22,7 +22,16 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(payload, default=str, ensure_ascii=False)
 
 
+# NOTE: these third-party loggers are noisy at INFO (e.g. httpx logs every single
+# Telegram polling request) and would drown out our own structured business events -
+# silenced regardless of the app's configured level.
+_NOISY_THIRD_PARTY_LOGGERS = ("httpx", "httpcore", "apscheduler")
+
+
 def setup_logging(level: int | str) -> None:
     handler = logging.StreamHandler()
     handler.setFormatter(JsonFormatter())
     logging.basicConfig(level=level, handlers=[handler], force=True)
+
+    for logger_name in _NOISY_THIRD_PARTY_LOGGERS:
+        logging.getLogger(logger_name).setLevel(logging.WARNING)
