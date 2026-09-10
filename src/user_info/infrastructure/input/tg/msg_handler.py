@@ -1,4 +1,5 @@
 import html
+import logging
 
 from dependency_injector.wiring import Provide, inject
 from telegram import Update
@@ -7,6 +8,8 @@ from telegram.ext import ContextTypes
 
 from common.application.bootstrap.container import ApplicationContainer
 from user_info.domain.api.user_info_service import UserInfoService
+
+logger = logging.getLogger(__name__)
 
 
 def _display_name(user) -> str:
@@ -33,6 +36,9 @@ async def user_info_command(
         await message.reply_text(f"Todavía no hay información registrada de {name}.")
         return
 
+    logger.info(
+        "User info viewed", extra={"event": "user_info_viewed", "chat_id": message.chat_id, "target_id": target.id}
+    )
     lines = [f"👤 <b>Información de {name}</b>", ""]
     for section in info.sections:
         lines.append(f"<b>{html.escape(section.title)}</b>")

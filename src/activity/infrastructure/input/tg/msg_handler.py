@@ -1,4 +1,5 @@
 import html
+import logging
 
 from dependency_injector.wiring import Provide, inject
 from telegram import Update
@@ -14,6 +15,8 @@ from activity.domain.model.monthly_ranking_entry import MonthlyRankingEntry
 from activity.domain.model.user_activity import UserActivity
 from activity.domain.utils.constants import WEEKDAY_LABELS
 from common.application.bootstrap.container import ApplicationContainer
+
+logger = logging.getLogger(__name__)
 
 USAGE_TEXT = "Uso: /mas_desocupados [mes|total] (sin argumento muestra ambos)"
 
@@ -113,6 +116,10 @@ async def most_inactive_command(
     if scope in (None, "total"):
         sections.append(_format_all_time(await all_time_ranking_service.get_all_time_ranking(message.chat_id)))
 
+    logger.info(
+        "Most inactive ranking viewed",
+        extra={"event": "most_inactive_viewed", "chat_id": message.chat_id, "scope": scope},
+    )
     await message.reply_text("\n\n".join(sections), parse_mode=ParseMode.HTML)
 
 
@@ -131,4 +138,5 @@ async def group_stats_command(
         await message.reply_text("Todavía no hay mensajes registrados en este grupo.")
         return
 
+    logger.info("Group stats viewed", extra={"event": "group_stats_viewed", "chat_id": message.chat_id})
     await message.reply_text(_format_group_stats(stats), parse_mode=ParseMode.HTML)

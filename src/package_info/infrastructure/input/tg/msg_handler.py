@@ -1,4 +1,5 @@
 import html
+import logging
 
 from dependency_injector.wiring import Provide, inject
 from telegram import Update
@@ -6,6 +7,8 @@ from telegram.ext import ContextTypes
 
 from common.application.bootstrap.container import ApplicationContainer
 from package_info.domain.api.package_lookup_service import PackageLookupService
+
+logger = logging.getLogger(__name__)
 
 USAGE_TEXT = "Uso: /paquete <nombre>"
 
@@ -26,6 +29,10 @@ async def paquete_command(
 
     name = " ".join(context.args)
     package = await package_lookup_service.lookup_package(name)
+    logger.info(
+        "Package found",
+        extra={"event": "package_found", "chat_id": message.chat_id, "query": name, "package": package.name},
+    )
 
     text = (
         f"📦 <b>{html.escape(package.name)}</b> {html.escape(package.version)} "

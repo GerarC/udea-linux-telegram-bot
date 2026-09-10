@@ -1,3 +1,5 @@
+import logging
+
 from dependency_injector.wiring import Provide, inject
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -5,6 +7,8 @@ from telegram.ext import ContextTypes
 from common.application.bootstrap.container import ApplicationContainer
 from horoscope.domain.api.horoscope_service import HoroscopeService
 from horoscope.domain.utils.constants import VALID_SIGNS
+
+logger = logging.getLogger(__name__)
 
 USAGE_TEXT = f"Uso: /horoscopo <signo> ({', '.join(VALID_SIGNS)})"
 
@@ -24,6 +28,10 @@ async def horoscopo_command(
         return
 
     reading = await horoscope_service.get_horoscope(context.args[0])
+    logger.info(
+        "Horoscope viewed",
+        extra={"event": "horoscope_viewed", "chat_id": message.chat_id, "sign": reading.sign},
+    )
 
     text = (
         f"🔮 <b>Horóscopo de {reading.sign}</b>\n\n"

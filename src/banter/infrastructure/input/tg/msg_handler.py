@@ -1,4 +1,5 @@
 import html
+import logging
 
 from dependency_injector.wiring import Provide, inject
 from telegram import Message, Update
@@ -7,6 +8,8 @@ from telegram.ext import ContextTypes
 from banter.domain.api.compliment_service import ComplimentService
 from banter.domain.api.insult_service import InsultService
 from common.application.bootstrap.container import ApplicationContainer
+
+logger = logging.getLogger(__name__)
 
 
 def _resolve_target(message: Message, context: ContextTypes.DEFAULT_TYPE) -> str | None:
@@ -36,6 +39,10 @@ async def insultar_command(
         return
 
     insulto = await insult_service.insult()
+    logger.info(
+        "Insult sent",
+        extra={"event": "insult_sent", "chat_id": message.chat_id, "target": usuario},
+    )
     await message.reply_html(f"{html.escape(usuario)}, {html.escape(insulto)}")
 
 
@@ -55,4 +62,8 @@ async def cumplido_command(
         return
 
     cumplido = await compliment_service.compliment()
+    logger.info(
+        "Compliment sent",
+        extra={"event": "compliment_sent", "chat_id": message.chat_id, "target": usuario},
+    )
     await message.reply_html(f"{html.escape(usuario)}, {html.escape(cumplido)}")

@@ -9,6 +9,8 @@ from common.application.bootstrap.container import ApplicationContainer
 from polls.domain.api.poll_parser_service import PollParserService
 from polls.domain.api.poll_recorder_service import PollRecorderService
 
+logger = logging.getLogger(__name__)
+
 USAGE_TEXT = "Uso: /encuesta pregunta | opción1 | opción2 [| opción3 ...] (2 a 10 opciones)"
 
 
@@ -38,6 +40,15 @@ async def encuesta_command(
         allows_multiple_answers=False,
     )
     await poll_recorder_service.record_poll(message.chat_id, user.id, user.username or user.full_name, poll.question)
+    logger.info(
+        "Poll created",
+        extra={
+            "event": "poll_created",
+            "chat_id": message.chat_id,
+            "user_id": user.id,
+            "option_count": len(poll.options),
+        },
+    )
 
     try:
         await message.delete()
