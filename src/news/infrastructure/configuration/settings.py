@@ -1,5 +1,8 @@
 import os
 from dataclasses import dataclass
+import logging
+
+logger = logging.getLogger(__name__)
 
 from news.domain.utils.constants import COOLDOWN_SECONDS
 from news.infrastructure.utils.constants import FEED_TTL_SECONDS, FEEDS
@@ -16,6 +19,15 @@ def load_news_settings() -> NewsSettings:
     cooldown_seconds = int(os.environ.get("NEWS_COOLDOWN_SECONDS", COOLDOWN_SECONDS))
     feed_ttl_seconds = int(os.environ.get("NEWS_FEED_TTL_SECONDS", FEED_TTL_SECONDS))
     feeds = _parse_feeds(os.environ.get("NEWS_FEEDS"))
+    logger.info(
+        "Loaded news module settings",
+        extra={
+            "event": "news_settings_loaded",
+            "cooldown_seconds": cooldown_seconds,
+            "feed_ttl_seconds": feed_ttl_seconds,
+            "feeds": feeds,
+        },
+    )
     return NewsSettings(cooldown_seconds=cooldown_seconds, feed_ttl_seconds=feed_ttl_seconds, feeds=feeds)
 
 
