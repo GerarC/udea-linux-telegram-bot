@@ -1,117 +1,42 @@
 import re
 
-# Words/phrases that trigger the feature. re.VERBOSE ignores whitespace in the
-# pattern, so literal spaces are written as \s+.
-# NOTE: the trigger words themselves stay in Spanish on purpose — they match
-# what Spanish-speaking users actually type in the chat.
-TRIGGER_PATTERN = re.compile(r"""
-    \b(
-    # --- Original tech terms ---
-    noticias?(\s+de)?\s+(tech|tecnolog[íi]a)
-    | tecnolog[íi]a
-    | inteligencia\s+artificial
-    | machine\s+learning
-    | devops
-    | kubernetes
-    | ciberseguridad
-    | linux
+# Trigger words for the news-reply feature. Stems are grouped by family and
+# expanded with common diminutive/plural suffixes instead of listing every
+# variant on its own line.
+# NOTE: triggers stay in Spanish on purpose — they match what users actually
+# type in the chat.
 
-    # --- Culo y variantes ---
-    | cul[oa]s?
-    | culit[oa]s?
-    | culaz[oa]s?
-    | culon[ae]s?
-    | culete?s?
-    | culete?s?
-    | culear
-    | culeado[as]?
-    | culeand[oa]
-    | culeo
-    | culeada
+# Generic suffixes: plural, diminutive, augmentative
+_S = r"(?:s|ito|ita|itos|itas|azo|aza|azos|azas)?"
 
-    # --- Prepucio y variantes ---
-    | prepuci[oa]s?
-    | prepucios?
-    | prepucito?s?
-    | foreskin
-    | capuch[oa]s?          # slang común
+# Multi-word phrases first (they need their own handling, can't use _S)
+_PHRASES = [
+    r"culo\s+de\s+atr[aá]s",
+    r"agujero\s+(?:del\s+culo|anal)",
+    r"miembro\s+viril",
+    r"verga\s+(?:gorda|grande)",
+    r"noticias?(?:\s+de)?\s+(?:tech|tecnolog[íi]a)",
+]
 
-    # --- Ano y variantes ---
-    | anos?
-    | anitos?
-    | anill[oa]s?
-    | ojete?s?
-    | ojitos?
-    | rect[oa]s?
-    | culo\s+de\s+atr[aá]s
-    | agujero\s+del\s+culo
-    | agujero\s+anal
+_SINGLE_STEMS = {
+    # --- tech ---
+    "tecnolog[íi]a|inteligencia\s+artificial|machine\s+learning|devops|"
+    "kubernetes|ciberseguridad|linux",
+    # --- butt ---
+    "cul[oa]|culet[ae]|culead[oa]|culear|cule[oa]",
+    "nalg[ao]|nalgot[ao]|nalg[oa]n|pompis|pompon[ae]|gl[uú]te[oa]|traser[oa]|"
+    "cadera|cachet[ei]|asiento",
+    "an[oa]|ojet[ea]|rect[oa]",  # ojo: alto riesgo de falso positivo
+    # --- penis ---
+    "pene|pito|pija|verga|polla|pollita|rabo|carajo|falo|pichul[oa]",
+    # --- vagina ---
+    "vagina|vulva|coño|chocho|panocha|cajeta|raj[ao]|hueco|concha|tot[oa]|cuca",
+}
 
-    # --- Nalgas y variantes ---
-    | nalg[ao]s?
-    | nalguit[ao]s?
-    | nalgot[ao]s?
-    | nalgon[ao]s?
-    | pompis?
-    | pompon[ae]s?
-    | gl[uú]te[oa]s?
-    | trasero?s?
-    | traseros?
-    | caderas?
-    | cachetes?
-    | cachetitos?
-    | asientos?             # a veces se usa eufemísticamente
+TRIGGER_PATTERN = re.compile(
+    r"\b(?:" + r"|".join([*_PHRASES, *_SINGLE_STEMS]) + r")\b",
+    re.IGNORECASE | re.UNICODE,
+)
 
-    # --- Pene y variantes ---
-    | penes?
-    | pene?s?
-    | pito?s?
-    | pija?s?
-    | verg[ao]s?
-    | verg[uü]ita?s?
-    | verg[oó]n
-    | polla?s?
-    | pollitas?
-    | bicho?s?
-    | rabo?s?
-    | carajo?s?
-    | miembro\s+viril
-    | falo?s?
-    | pija
-    | pene?cito?s?
-    | pija?cita?s?
-    | verga\s+gorda
-    | verga\s+grande
-
-    # --- Vagina y variantes ---
-    | vaginas?
-    | vagi?nas?
-    | co[ñn]os?
-    | co[ñn]itos?
-    | chochos?
-    | chochit[oa]s?
-    | panochas?
-    | panochitas?
-    | cajetas?
-    | cajetitas?
-    | vulvas?
-    | vulvitas?
-    | raja?s?
-    | rajitas?
-    | hueco?s?
-    | huecitos?
-    | concha?s?
-    | conchitas?
-    | papa?s?               # algunos países
-    | papita?s?
-    | totos?
-    | totitos?
-    | cuca?s?
-    | cucitas?
-    | panocha
-    | chimb[oa]s?
-    | panochita
-    )\b
-""", re.IGNORECASE | re.VERBOSE | re.UNICODE)
-COOLDOWN_SECONDS = 60  # minimum time between replies in the same chat
-RECENT_MEMORY = 20  # how many links to remember per chat to avoid repeats
+COOLDOWN_SECONDS = 180  # minimum time between replies in the same chat
+RECENT_MEMORY = 40     # how many links to remember per chat to avoid repeats

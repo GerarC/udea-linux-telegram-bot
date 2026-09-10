@@ -21,8 +21,8 @@ src/
 │       ├── input/tg/error_handler.py            # handler global (app.add_error_handler) para excepciones no atrapadas
 │       └── output/postgres/
 │           ├── pool.py                            # pool de asyncpg ÚNICO, compartido por todas las features
-│           ├── schema.py                           # crea group_members (identidad compartida chat_id+user_id)
-│           └── members.py                          # upsert_member(conn, chat_id, user_id, username)
+│           ├── schema/group_members.py             # crea group_members (identidad compartida chat_id+user_id)
+│           └── utils/helpers.py                    # upsert_member(conn, chat_id, user_id, username)
 ├── user_info/                    # feature normal que AGREGA lo que otras features exponen (sin persistencia propia)
 └── <feature>/
     ├── application/bootstrap/container.py   # DI: arma adapters + usecase de ESTA feature
@@ -38,6 +38,15 @@ src/
         ├── output/<tecnología>/...                # adaptadores driven, agrupados por tecnología (postgres/, rss/, etc.)
         └── utils/constants.py                       # constantes hardcodeadas propias de infraestructura (URLs, TTLs)
 ```
+
+Ejemplos reales de features con distintas formas de `infrastructure/`:
+`horoscope` (Postgres, sin nada más), `package_info` (adapter de salida
+`infrastructure/output/http/adapter/`, sin `pool` en su container — no
+persiste nada), y `reminders` (Postgres + un segundo input no-Telegram,
+`infrastructure/input/tg/job_handler.py`, el callback de `JobQueue` de PTB
+que corre cuando vence un recordatorio; `main.py` reprograma los pendientes
+contra la DB en `on_startup` porque el filesystem de Fly.io es efímero pero
+`JobQueue` es solo en memoria).
 
 Las reglas detalladas por tema viven en `.claude/rules/` y cargan solo cuando se
 toca un archivo de esa área (no consumen contexto el resto del tiempo):
