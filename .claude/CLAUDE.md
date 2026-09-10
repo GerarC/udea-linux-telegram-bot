@@ -35,8 +35,10 @@ src/
     └── infrastructure/
         ├── configuration/settings.py           # SOLO valores que vienen de variables de entorno
         ├── input/<tecnología>/...                # adaptadores driving, agrupados por tecnología (tg/, http/, etc.)
+        │   └── <tecnología>/utils/constants.py       # constantes propias de ESE input (poco común)
         ├── output/<tecnología>/...                # adaptadores driven, agrupados por tecnología (postgres/, rss/, etc.)
-        └── utils/constants.py                       # constantes hardcodeadas propias de infraestructura (URLs, TTLs)
+        │   └── <tecnología>/utils/constants.py       # constantes propias de ESE adapter (URLs, TTLs, SQL — ver postgres.md)
+        └── utils/constants.py                       # SOLO si una constante la usan varias tecnologías de la feature a la vez
 ```
 
 Ejemplos reales de features con distintas formas de `infrastructure/`:

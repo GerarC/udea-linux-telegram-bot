@@ -36,7 +36,7 @@ def main() -> None:
     async def _reschedule_pending_reminders(application) -> None:
         # NOTE: JobQueue is in-memory only, but Fly.io's filesystem is ephemeral -
         # every reminder still pending in Postgres must be re-armed on every restart.
-        pending_reminders_usecase = container.reminders.pending_reminders_usecase()
+        pending_reminders_usecase = await container.reminders.pending_reminders_usecase()
         pending = await pending_reminders_usecase.get_pending_reminders()
         now = datetime.now(UTC)
         for reminder in pending:
