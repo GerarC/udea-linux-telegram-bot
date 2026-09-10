@@ -2,7 +2,7 @@ import httpx
 
 from package_info.domain.model.package_info import PackageInfo
 from package_info.domain.spi.arch_package_port import ArchPackagePort
-from package_info.infrastructure.utils.constants import ARCH_PACKAGE_SEARCH_URL, REQUEST_TIMEOUT_SECONDS
+from package_info.infrastructure.output.http.utils.constants import ARCH_PACKAGE_SEARCH_URL, REQUEST_TIMEOUT_SECONDS
 
 
 class ArchPackageAdapter(ArchPackagePort):
