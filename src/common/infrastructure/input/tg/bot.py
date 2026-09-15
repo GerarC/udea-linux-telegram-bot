@@ -5,6 +5,11 @@ from activity.infrastructure.input.tg.msg_handler import group_stats_command, mo
 from banter.infrastructure.input.tg.msg_handler import cumplido_command, insultar_command
 from common.infrastructure.input.tg.error_handler import error_handler
 from common.infrastructure.input.tg.help_handler import help_command
+from confessions.infrastructure.input.tg.msg_handler import (
+    borrar_confesion_command,
+    confesar_command,
+    confesiones_command,
+)
 from horoscope.infrastructure.input.tg.msg_handler import horoscopo_command
 from news.infrastructure.input.tg.msg_handler import on_message
 from package_info.infrastructure.input.tg.msg_handler import paquete_command
@@ -27,6 +32,9 @@ BOT_COMMANDS = [
     BotCommand("horoscopo", "Muestra el horóscopo del día para un signo"),
     BotCommand("paquete", "Busca un paquete en los repositorios de Arch Linux"),
     BotCommand("recordar", "Programa un recordatorio: /recordar mensaje en N min"),
+    BotCommand("confesar", "Publica una confesión anónima"),
+    BotCommand("confesiones", "Muestra las últimas confesiones del grupo"),
+    BotCommand("borrar_confesion", "Borra una confesión por id (solo admins)"),
 ]
 
 
@@ -68,6 +76,9 @@ def build_application(
     app.add_handler(CommandHandler("horoscopo", horoscopo_command))
     app.add_handler(CommandHandler("paquete", paquete_command))
     app.add_handler(CommandHandler("recordar", recordar_command))
+    app.add_handler(CommandHandler("confesar", confesar_command))
+    app.add_handler(CommandHandler("confesiones", confesiones_command))
+    app.add_handler(CommandHandler("borrar_confesion", borrar_confesion_command))
     app.add_handler(CommandHandler("help", help_command))
     app.add_error_handler(error_handler)
     return app

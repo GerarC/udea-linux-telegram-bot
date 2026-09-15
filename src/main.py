@@ -30,6 +30,7 @@ def main() -> None:
             "package_info.infrastructure.input.tg.msg_handler",
             "reminders.infrastructure.input.tg.msg_handler",
             "reminders.infrastructure.input.tg.job_handler",
+            "confessions.infrastructure.input.tg.msg_handler",
         ]
     )
 
