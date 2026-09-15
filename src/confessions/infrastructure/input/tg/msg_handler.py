@@ -1,6 +1,5 @@
 import html
 import logging
-import random
 
 from dependency_injector.wiring import Provide, inject
 from telegram import Update
@@ -12,24 +11,18 @@ from common.application.bootstrap.container import ApplicationContainer
 from confessions.domain.api.confession_deletion_service import ConfessionDeletionService
 from confessions.domain.api.confession_listing_service import ConfessionListingService
 from confessions.domain.api.confession_submission_service import ConfessionSubmissionService
+from confessions.domain.api.confession_title_service import ConfessionTitleService
 from confessions.domain.model.confession import Confession
 
 logger = logging.getLogger(__name__)
 
 USAGE_TEXT = "Uso: /confesar <texto> (entre 15 y 500 caracteres)."
 
-# NOTE: user-facing flavor text in Spanish - the bot serves a Spanish-speaking group.
-CONFESSION_TITLES = (
-    ("🕯️", "Confesión anónima", "Enviado desde las profundidades del /dev/null"),
-    ("🩸", "Confesión del abismo", "El universo decidió que esto debía saberse"),
-    ("🧠", "Confesión residual", "Transmitido anónimamente"),
-)
 
-
-def _format_confession(confession: Confession) -> str:
-    emoji, title, footer = random.choice(CONFESSION_TITLES)
+async def _format_confession(confession: Confession, title_service: ConfessionTitleService) -> str:
+    title = await title_service.get_random_title()
     content = html.escape(confession.content)
-    return f"{emoji} <b>{title} #{confession.id}</b>\n\n" f'"{content}"\n\n' f"— {footer}"
+    return f"{title.emoji} <b>{title.title} #{confession.id}</b>\n\n" f'"{content}"\n\n' f"— {title.footer}"
 
 
 @inject
@@ -39,6 +32,7 @@ async def confesar_command(
     submission_service: ConfessionSubmissionService = Provide[
         ApplicationContainer.confessions.confession_submission_usecase
     ],
+    title_service: ConfessionTitleService = Provide[ApplicationContainer.confessions.confession_title_usecase],
 ) -> None:
     message = update.effective_message
     user = update.effective_user
@@ -59,7 +53,8 @@ async def confesar_command(
         extra={"event": "confession_submitted", "chat_id": message.chat_id, "confession_id": confession.id},
     )
 
-    await context.bot.send_message(message.chat_id, _format_confession(confession), parse_mode=ParseMode.HTML)
+    formatted = await _format_confession(confession, title_service)
+    await context.bot.send_message(message.chat_id, formatted, parse_mode=ParseMode.HTML)
 
     try:
         await message.delete()
@@ -78,6 +73,7 @@ async def confesiones_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
     listing_service: ConfessionListingService = Provide[ApplicationContainer.confessions.confession_listing_usecase],
+    title_service: ConfessionTitleService = Provide[ApplicationContainer.confessions.confession_title_usecase],
 ) -> None:
     message = update.effective_message
     if message is None:
@@ -92,8 +88,8 @@ async def confesiones_command(
         "Confessions listed", extra={"event": "confessions_listed", "chat_id": message.chat_id}
     )
 
-    text = "\n\n".join(_format_confession(confession) for confession in confessions)
-    await message.reply_html(text)
+    formatted = [await _format_confession(confession, title_service) for confession in confessions]
+    await message.reply_html("\n\n".join(formatted))
 
 
 @inject

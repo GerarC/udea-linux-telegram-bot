@@ -10,16 +10,9 @@ CREATE TABLE IF NOT EXISTS confessions (
 )
 """
 
-# NOTE: atomic check-and-set - see postgres.md. The INSERT only happens when the
-# user has no confession in this chat newer than the cooldown window, so a burst of
-# concurrent /confesar calls from the same user can't both slip through.
 CREATE_CONFESSION_SQL = """
 INSERT INTO confessions (chat_id, user_id, content)
-SELECT $1, $2, $3
-WHERE NOT EXISTS (
-    SELECT 1 FROM confessions
-    WHERE chat_id = $1 AND user_id = $2 AND created_at > now() - ($4 * interval '1 minute')
-)
+VALUES ($1, $2, $3)
 RETURNING id, chat_id, user_id, content, created_at, is_deleted
 """
 
@@ -36,4 +29,28 @@ UPDATE confessions
 SET is_deleted = true
 WHERE id = $1 AND chat_id = $2 AND is_deleted = false
 RETURNING id, chat_id, user_id, content, created_at, is_deleted
+"""
+
+CREATE_CONFESSION_TITLES_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS confession_titles (
+    id SERIAL PRIMARY KEY,
+    emoji TEXT NOT NULL,
+    title TEXT NOT NULL,
+    footer TEXT NOT NULL,
+    UNIQUE (title)
+)
+"""
+
+# NOTE: seeds the built-in flavor titles once - ON CONFLICT (title) makes this
+# idempotent across restarts. Add more via sql/confession_titles_seed.sql.
+SEED_CONFESSION_TITLES_SQL = """
+INSERT INTO confession_titles (emoji, title, footer) VALUES
+    ('🕯️', 'Confesión anónima', 'Enviado desde las profundidades del /dev/null'),
+    ('🩸', 'Confesión del abismo', 'El universo decidió que esto debía saberse'),
+    ('🧠', 'Confesión residual', 'Transmitido anónimamente')
+ON CONFLICT (title) DO NOTHING
+"""
+
+GET_RANDOM_CONFESSION_TITLE_SQL = """
+SELECT emoji, title, footer FROM confession_titles ORDER BY random() LIMIT 1
 """
