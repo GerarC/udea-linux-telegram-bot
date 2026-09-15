@@ -1,10 +1,9 @@
 from confessions.domain.api.confession_submission_service import ConfessionSubmissionService
-from confessions.domain.error.confession_cooldown_error import ConfessionCooldownError
 from confessions.domain.error.confession_too_long_error import ConfessionTooLongError
 from confessions.domain.error.confession_too_short_error import ConfessionTooShortError
 from confessions.domain.model.confession import Confession
 from confessions.domain.spi.confession_repository_port import ConfessionRepositoryPort
-from confessions.domain.utils.constants import COOLDOWN_MINUTES, MAX_CONTENT_LENGTH, MIN_CONTENT_LENGTH
+from confessions.domain.utils.constants import MAX_CONTENT_LENGTH, MIN_CONTENT_LENGTH
 
 
 class ConfessionSubmissionUsecase(ConfessionSubmissionService):
@@ -18,9 +17,4 @@ class ConfessionSubmissionUsecase(ConfessionSubmissionService):
         if len(normalized) > MAX_CONTENT_LENGTH:
             raise ConfessionTooLongError()
 
-        confession = await self._repository_port.create_confession(
-            chat_id, user_id, username, normalized, COOLDOWN_MINUTES
-        )
-        if confession is None:
-            raise ConfessionCooldownError()
-        return confession
+        return await self._repository_port.create_confession(chat_id, user_id, username, normalized)

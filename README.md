@@ -18,10 +18,13 @@ reales (paquetes, recordatorios, estadísticas), mitad tono irreverente
 | `/paquete nombre` | Busca un paquete en los repositorios de Arch Linux y muestra su descripción. |
 | `/recordar mensaje en N min\|horas\|días` | Programa un recordatorio; sobrevive un reinicio del bot. |
 | `/mas_desocupados [mes\|total]` | Top 5 de quienes más mensajes envían. |
-| `/usuario_info` | Tu información acumulada en el bot (o la de alguien, con reply). |
+| `/gdb [@usuario]` | Debuguea tu existencia: tu información acumulada en el bot (o la de alguien, con reply o `@usuario`). |
 | `/stats_grupo` | Estadísticas del grupo: mensajes, hora pico, día más activo. |
 | `/encuesta pregunta \| opción1 \| opción2` | Crea una encuesta nativa de Telegram. |
 | `/horoscopo signo` | Horóscopo del día para un signo (determinístico, no aleatorio). |
+| `/confesar texto` | Publica una confesión anónima (15-500 caracteres). |
+| `/confesiones` | Muestra las últimas confesiones publicadas en el grupo. |
+| `/borrar_confesion id` | Borra una confesión por id. Solo admins. |
 | *(pasivo)* | Detecta menciones de noticias de tecnología ("linux", "kubernetes", etc.) y responde con una noticia real (RSS). |
 
 ## Arquitectura

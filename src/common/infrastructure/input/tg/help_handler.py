@@ -64,8 +64,7 @@ sacar la basura en 30 min</code>, <code>/recordar reunión en 2 horas</code>. \
 Sobrevive un reinicio del bot.
 
 🕯️ <b>/confesar texto</b> — <i>cualquiera</i>
-Publica una confesión anónima en el grupo (entre 15 y 500 caracteres). Hay un \
-cooldown de unos minutos entre confesión y confesión por persona.
+Publica una confesión anónima en el grupo (entre 15 y 500 caracteres).
 
 📜 <b>/confesiones</b> — <i>cualquiera</i>
 Muestra las últimas confesiones publicadas en el grupo.
