@@ -13,3 +13,7 @@ INSERT INTO group_members (chat_id, user_id, username)
 VALUES ($1, $2, $3)
 ON CONFLICT (chat_id, user_id) DO UPDATE SET username = EXCLUDED.username, updated_at = now()
 """
+
+FIND_MEMBER_BY_USERNAME_SQL = """
+SELECT user_id FROM group_members WHERE chat_id = $1 AND lower(username) = lower($2)
+"""

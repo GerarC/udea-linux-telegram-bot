@@ -44,7 +44,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
 
     activity = providers.Container(ActivityContainer, pool=db_pool, group_stats_providers=group_stats_providers)
 
-    # NOTE: /usuario_info fans out to every feature's user_info_provider. A feature that
+    # NOTE: /gdb fans out to every feature's user_info_provider. A feature that
     # has per-user data to show just adds its own provider here - see
     # common/domain/spi/user_info_provider_port.py.
     user_info_providers = providers.List(
@@ -53,4 +53,4 @@ class ApplicationContainer(containers.DeclarativeContainer):
         polls.user_info_provider,
     )
 
-    user_info = providers.Container(UserInfoContainer, info_providers=user_info_providers)
+    user_info = providers.Container(UserInfoContainer, info_providers=user_info_providers, pool=db_pool)

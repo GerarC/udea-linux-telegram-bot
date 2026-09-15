@@ -34,9 +34,12 @@ Top 5 de quienes más mensajes envían. Sin argumento muestra el mes actual (con
 subió/bajó frente al mes pasado) y el histórico. <code>mes</code> o <code>total</code> \
 muestran solo esa sección.
 
-👤 <b>/usuario_info</b> — <i>cualquiera</i>
-Muestra tu información acumulada en el bot (Autispuntos, actividad, etc.). Si \
-respondes (reply) al mensaje de otra persona, muestra la de ella en vez de la tuya.
+🐛 <b>/gdb @usuario</b> — <i>cualquiera</i>
+Debuguea la existencia de alguien: muestra su información acumulada en el bot \
+(Autispuntos, actividad, etc.). Funciona respondiendo (reply) su mensaje o \
+mencionándolo (<code>/gdb @usuario</code>) — el reply tiene prioridad si haces \
+ambas cosas. El tag por <code>@usuario</code> solo funciona si esa persona ya \
+escribió algo en el grupo antes. Sin nada, muestra la tuya.
 
 📊 <b>/stats_grupo</b> — <i>cualquiera</i>
 Estadísticas del grupo: mensajes de este mes y de siempre, participantes activos, \

@@ -11,7 +11,7 @@ from package_info.infrastructure.input.tg.msg_handler import paquete_command
 from points.infrastructure.input.tg.msg_handler import grant_points_command, my_points_command, ranking_command
 from polls.infrastructure.input.tg.msg_handler import encuesta_command
 from reminders.infrastructure.input.tg.msg_handler import recordar_command
-from user_info.infrastructure.input.tg.msg_handler import user_info_command
+from user_info.infrastructure.input.tg.msg_handler import gdb_command
 
 BOT_COMMANDS = [
     BotCommand("help", "Muestra qué puede hacer el bot"),
@@ -21,7 +21,7 @@ BOT_COMMANDS = [
     BotCommand("insultar", "Insulta (con cariño) a un usuario"),
     BotCommand("cumplido", "Le dice un cumplido a un usuario"),
     BotCommand("mas_desocupados", "Top 5 de quienes más mensajes envían"),
-    BotCommand("usuario_info", "Muestra tu información acumulada en el bot (o la de alguien, con reply)"),
+    BotCommand("gdb", "Debuguea tu existencia (o la de alguien, con reply o @usuario)"),
     BotCommand("stats_grupo", "Estadísticas del grupo: mensajes, hora pico, día más activo"),
     BotCommand("encuesta", "Crea una encuesta: /encuesta pregunta | opción1 | opción2"),
     BotCommand("horoscopo", "Muestra el horóscopo del día para un signo"),
@@ -62,7 +62,7 @@ def build_application(
     app.add_handler(CommandHandler("insultar", insultar_command))
     app.add_handler(CommandHandler("cumplido", cumplido_command))
     app.add_handler(CommandHandler("mas_desocupados", most_inactive_command))
-    app.add_handler(CommandHandler("usuario_info", user_info_command))
+    app.add_handler(CommandHandler("gdb", gdb_command))
     app.add_handler(CommandHandler("stats_grupo", group_stats_command))
     app.add_handler(CommandHandler("encuesta", encuesta_command))
     app.add_handler(CommandHandler("horoscopo", horoscopo_command))
