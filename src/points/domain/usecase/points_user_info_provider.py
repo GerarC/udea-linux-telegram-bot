@@ -5,7 +5,7 @@ from points.domain.api.user_position_service import UserPositionService
 
 
 class PointsUserInfoProvider(UserInfoProviderPort):
-    """Adapts UserPositionService + UserPointsService into a UserInfoProviderPort section for /usuario_info."""
+    """Adapts UserPositionService + UserPointsService into a UserInfoProviderPort section for /gdb."""
 
     def __init__(self, user_position_service: UserPositionService, user_points_service: UserPointsService) -> None:
         self._user_position_service = user_position_service

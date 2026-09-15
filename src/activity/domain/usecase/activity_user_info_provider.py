@@ -5,7 +5,7 @@ from common.domain.spi.user_info_provider_port import UserInfoProviderPort
 
 
 class ActivityUserInfoProvider(UserInfoProviderPort):
-    """Adapts MonthlyStatsService + AllTimeStatsService into a UserInfoProviderPort section for /usuario_info."""
+    """Adapts MonthlyStatsService + AllTimeStatsService into a UserInfoProviderPort section for /gdb."""
 
     def __init__(self, monthly_stats_service: MonthlyStatsService, all_time_stats_service: AllTimeStatsService) -> None:
         self._monthly_stats_service = monthly_stats_service

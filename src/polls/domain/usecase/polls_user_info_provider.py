@@ -4,7 +4,7 @@ from polls.domain.api.poll_count_service import PollCountService
 
 
 class PollsUserInfoProvider(UserInfoProviderPort):
-    """Adapts PollCountService into a UserInfoProviderPort section for /usuario_info."""
+    """Adapts PollCountService into a UserInfoProviderPort section for /gdb."""
 
     def __init__(self, poll_count_service: PollCountService) -> None:
         self._poll_count_service = poll_count_service

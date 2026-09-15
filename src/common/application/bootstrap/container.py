@@ -3,6 +3,7 @@ from dependency_injector import containers, providers
 from activity.application.bootstrap.container import ActivityContainer
 from banter.application.bootstrap.container import BanterContainer
 from common.infrastructure.configuration.settings import load_settings
+from confessions.application.bootstrap.container import ConfessionsContainer
 from common.infrastructure.output.postgres.pool import init_pool
 from horoscope.application.bootstrap.container import HoroscopeContainer
 from news.application.bootstrap.container import NewsContainer
@@ -29,6 +30,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
 
     news = providers.Container(NewsContainer, pool=db_pool)
     points = providers.Container(PointsContainer, pool=db_pool)
+    confessions = providers.Container(ConfessionsContainer, pool=db_pool)
     banter = providers.Container(BanterContainer, pool=db_pool)
     polls = providers.Container(PollsContainer, pool=db_pool)
     horoscope = providers.Container(HoroscopeContainer, pool=db_pool)
@@ -44,7 +46,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
 
     activity = providers.Container(ActivityContainer, pool=db_pool, group_stats_providers=group_stats_providers)
 
-    # NOTE: /usuario_info fans out to every feature's user_info_provider. A feature that
+    # NOTE: /gdb fans out to every feature's user_info_provider. A feature that
     # has per-user data to show just adds its own provider here - see
     # common/domain/spi/user_info_provider_port.py.
     user_info_providers = providers.List(
@@ -53,4 +55,4 @@ class ApplicationContainer(containers.DeclarativeContainer):
         polls.user_info_provider,
     )
 
-    user_info = providers.Container(UserInfoContainer, info_providers=user_info_providers)
+    user_info = providers.Container(UserInfoContainer, info_providers=user_info_providers, pool=db_pool)

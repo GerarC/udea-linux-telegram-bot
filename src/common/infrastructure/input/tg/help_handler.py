@@ -34,9 +34,12 @@ Top 5 de quienes más mensajes envían. Sin argumento muestra el mes actual (con
 subió/bajó frente al mes pasado) y el histórico. <code>mes</code> o <code>total</code> \
 muestran solo esa sección.
 
-👤 <b>/usuario_info</b> — <i>cualquiera</i>
-Muestra tu información acumulada en el bot (Autispuntos, actividad, etc.). Si \
-respondes (reply) al mensaje de otra persona, muestra la de ella en vez de la tuya.
+🐛 <b>/gdb @usuario</b> — <i>cualquiera</i>
+Debuguea la existencia de alguien: muestra su información acumulada en el bot \
+(Autispuntos, actividad, etc.). Funciona respondiendo (reply) su mensaje o \
+mencionándolo (<code>/gdb @usuario</code>) — el reply tiene prioridad si haces \
+ambas cosas. El tag por <code>@usuario</code> solo funciona si esa persona ya \
+escribió algo en el grupo antes. Sin nada, muestra la tuya.
 
 📊 <b>/stats_grupo</b> — <i>cualquiera</i>
 Estadísticas del grupo: mensajes de este mes y de siempre, participantes activos, \
@@ -59,6 +62,16 @@ versión y repo.
 Te manda ese mensaje de vuelta cuando se cumpla el tiempo. Ej: <code>/recordar \
 sacar la basura en 30 min</code>, <code>/recordar reunión en 2 horas</code>. \
 Sobrevive un reinicio del bot.
+
+🕯️ <b>/confesar texto</b> — <i>cualquiera</i>
+Publica una confesión anónima en el grupo (entre 15 y 500 caracteres). Hay un \
+cooldown de unos minutos entre confesión y confesión por persona.
+
+📜 <b>/confesiones</b> — <i>cualquiera</i>
+Muestra las últimas confesiones publicadas en el grupo.
+
+🗑️ <b>/borrar_confesion id</b> — <i>solo admins del grupo</i>
+Borra la confesión con ese id (el número que aparece junto a "Confesión #id").
 
 ❓ <b>/help</b> — <i>cualquiera</i>
 Muestra este mensaje.\

@@ -5,13 +5,18 @@ from activity.infrastructure.input.tg.msg_handler import group_stats_command, mo
 from banter.infrastructure.input.tg.msg_handler import cumplido_command, insultar_command
 from common.infrastructure.input.tg.error_handler import error_handler
 from common.infrastructure.input.tg.help_handler import help_command
+from confessions.infrastructure.input.tg.msg_handler import (
+    borrar_confesion_command,
+    confesar_command,
+    confesiones_command,
+)
 from horoscope.infrastructure.input.tg.msg_handler import horoscopo_command
 from news.infrastructure.input.tg.msg_handler import on_message
 from package_info.infrastructure.input.tg.msg_handler import paquete_command
 from points.infrastructure.input.tg.msg_handler import grant_points_command, my_points_command, ranking_command
 from polls.infrastructure.input.tg.msg_handler import encuesta_command
 from reminders.infrastructure.input.tg.msg_handler import recordar_command
-from user_info.infrastructure.input.tg.msg_handler import user_info_command
+from user_info.infrastructure.input.tg.msg_handler import gdb_command
 
 BOT_COMMANDS = [
     BotCommand("help", "Muestra qué puede hacer el bot"),
@@ -21,12 +26,15 @@ BOT_COMMANDS = [
     BotCommand("insultar", "Insulta (con cariño) a un usuario"),
     BotCommand("cumplido", "Le dice un cumplido a un usuario"),
     BotCommand("mas_desocupados", "Top 5 de quienes más mensajes envían"),
-    BotCommand("usuario_info", "Muestra tu información acumulada en el bot (o la de alguien, con reply)"),
+    BotCommand("gdb", "Debuguea tu existencia (o la de alguien, con reply o @usuario)"),
     BotCommand("stats_grupo", "Estadísticas del grupo: mensajes, hora pico, día más activo"),
     BotCommand("encuesta", "Crea una encuesta: /encuesta pregunta | opción1 | opción2"),
     BotCommand("horoscopo", "Muestra el horóscopo del día para un signo"),
     BotCommand("paquete", "Busca un paquete en los repositorios de Arch Linux"),
     BotCommand("recordar", "Programa un recordatorio: /recordar mensaje en N min"),
+    BotCommand("confesar", "Publica una confesión anónima"),
+    BotCommand("confesiones", "Muestra las últimas confesiones del grupo"),
+    BotCommand("borrar_confesion", "Borra una confesión por id (solo admins)"),
 ]
 
 
@@ -62,12 +70,15 @@ def build_application(
     app.add_handler(CommandHandler("insultar", insultar_command))
     app.add_handler(CommandHandler("cumplido", cumplido_command))
     app.add_handler(CommandHandler("mas_desocupados", most_inactive_command))
-    app.add_handler(CommandHandler("usuario_info", user_info_command))
+    app.add_handler(CommandHandler("gdb", gdb_command))
     app.add_handler(CommandHandler("stats_grupo", group_stats_command))
     app.add_handler(CommandHandler("encuesta", encuesta_command))
     app.add_handler(CommandHandler("horoscopo", horoscopo_command))
     app.add_handler(CommandHandler("paquete", paquete_command))
     app.add_handler(CommandHandler("recordar", recordar_command))
+    app.add_handler(CommandHandler("confesar", confesar_command))
+    app.add_handler(CommandHandler("confesiones", confesiones_command))
+    app.add_handler(CommandHandler("borrar_confesion", borrar_confesion_command))
     app.add_handler(CommandHandler("help", help_command))
     app.add_error_handler(error_handler)
     return app

@@ -14,7 +14,8 @@ from horoscope.domain.utils.constants import (
     TIMEZONE,
     VALID_SIGNS,
 )
-from horoscope.domain.utils.deterministic_pick import deterministic_choice, deterministic_index
+from horoscope.domain.utils.deterministic_pick import deterministic_choice, deterministic_index, deterministic_permutation
+from horoscope.domain.utils.text_normalization import strip_accents
 
 FALLBACK_HOROSCOPE = "las estrellas están en mantenimiento programado, intenta más tarde"
 
@@ -24,7 +25,7 @@ class HoroscopeUsecase(HoroscopeService):
         self._phrase_port = phrase_port
 
     async def get_horoscope(self, sign: str) -> HoroscopeReading:
-        normalized = sign.strip().lower()
+        normalized = strip_accents(sign.strip().lower())
         if normalized not in VALID_SIGNS:
             raise InvalidSignError(sign)
 
@@ -33,7 +34,10 @@ class HoroscopeUsecase(HoroscopeService):
         phrase_count = await self._phrase_port.get_phrase_count()
         horoscope_text = FALLBACK_HOROSCOPE
         if phrase_count:
-            index = deterministic_index(f"{today}|{normalized}|horoscope", phrase_count)
+            # NOTE: one shuffle per day shared by all signs, instead of an independent
+            # pick per sign, so the 12 signs never collide on the same phrase that day.
+            daily_order = deterministic_permutation(f"{today}|horoscope", phrase_count)
+            index = daily_order[VALID_SIGNS.index(normalized) % phrase_count]
             horoscope_text = await self._phrase_port.get_phrase(index) or FALLBACK_HOROSCOPE
 
         compatible_signs = [s for s in VALID_SIGNS if s != normalized]
