@@ -15,3 +15,8 @@ def previous_month(period_month: date) -> date:
     if period_month.month == 1:
         return date(period_month.year - 1, 12, 1)
     return date(period_month.year, period_month.month - 1, 1)
+
+
+def months_back(period_month: date, n: int) -> date:
+    month_index = period_month.year * 12 + (period_month.month - 1) - n
+    return date(month_index // 12, month_index % 12 + 1, 1)

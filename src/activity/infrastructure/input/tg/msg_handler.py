@@ -9,11 +9,13 @@ from telegram.ext import ContextTypes
 from activity.domain.api.activity_service import ActivityService
 from activity.domain.api.all_time_ranking_service import AllTimeRankingService
 from activity.domain.api.group_stats_service import GroupStatsService
+from activity.domain.api.monthly_history_service import MonthlyHistoryService
 from activity.domain.api.monthly_ranking_service import MonthlyRankingService
 from activity.domain.model.group_stats import GroupStats
 from activity.domain.model.monthly_ranking_entry import MonthlyRankingEntry
 from activity.domain.model.user_activity import UserActivity
 from activity.domain.utils.constants import WEEKDAY_LABELS
+from activity.infrastructure.input.tg.chart_renderer import render_monthly_activity_chart
 from common.application.bootstrap.container import ApplicationContainer
 
 logger = logging.getLogger(__name__)
@@ -75,7 +77,9 @@ def _format_group_stats(stats: GroupStats) -> str:
     if stats.peak_weekday is not None:
         lines.append(f"Día más activo: {WEEKDAY_LABELS[stats.peak_weekday]}")
 
-    lines.extend(html.escape(line) for line in stats.extra_lines)
+    if stats.extra_lines:
+        lines.append("")
+        lines.extend(html.escape(line) for line in stats.extra_lines)
 
     return "\n".join(lines)
 
@@ -140,3 +144,26 @@ async def group_stats_command(
 
     logger.info("Group stats viewed", extra={"event": "group_stats_viewed", "chat_id": message.chat_id})
     await message.reply_text(_format_group_stats(stats), parse_mode=ParseMode.HTML)
+
+
+@inject
+async def actividad_grupo_command(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    monthly_history_service: MonthlyHistoryService = Provide[ApplicationContainer.activity.monthly_history_usecase],
+) -> None:
+    message = update.effective_message
+    if message is None:
+        return
+
+    history = await monthly_history_service.get_monthly_history(message.chat_id)
+    if not any(entry.message_count for entry in history):
+        await message.reply_text("Todavía no hay actividad registrada en este grupo.")
+        return
+
+    logger.info(
+        "Group monthly activity chart viewed",
+        extra={"event": "monthly_activity_viewed", "chat_id": message.chat_id},
+    )
+    chart = render_monthly_activity_chart(history)
+    await message.reply_photo(photo=chart, caption="📈 Actividad del grupo en los últimos 6 meses")

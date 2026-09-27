@@ -158,3 +158,11 @@ FROM per_weekday, chat_average
 ORDER BY (per_weekday.total + chat_average.k * chat_average.global_avg) / (per_weekday.days + chat_average.k) DESC
 LIMIT 1
 """
+
+GET_CHAT_MONTHLY_HISTORY_SQL = """
+SELECT period_month, COALESCE(SUM(message_count), 0)::bigint AS total
+FROM user_message_stats
+WHERE chat_id = $1 AND period_month >= $2
+GROUP BY period_month
+ORDER BY period_month
+"""

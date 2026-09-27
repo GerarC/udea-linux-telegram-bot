@@ -1,7 +1,12 @@
 from telegram import BotCommand
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
-from activity.infrastructure.input.tg.msg_handler import group_stats_command, most_inactive_command, track_message
+from activity.infrastructure.input.tg.msg_handler import (
+    actividad_grupo_command,
+    group_stats_command,
+    most_inactive_command,
+    track_message,
+)
 from banter.infrastructure.input.tg.msg_handler import (
     agregar_halago_command,
     agregar_insulto_command,
@@ -35,6 +40,7 @@ BOT_COMMANDS = [
     BotCommand("mas_desocupados", "Top 5 de quienes más mensajes envían"),
     BotCommand("gdb", "Debuguea tu existencia (o la de alguien, con reply o @usuario)"),
     BotCommand("stats_grupo", "Estadísticas del grupo: mensajes, hora pico, día más activo"),
+    BotCommand("actividad_grupo", "Gráfica de mensajes del grupo en los últimos 6 meses"),
     BotCommand("encuesta", "Crea una encuesta: /encuesta pregunta | opción1 | opción2"),
     BotCommand("horoscopo", "Muestra el horóscopo del día para un signo"),
     BotCommand("paquete", "Busca un paquete en los repositorios de Arch Linux"),
@@ -81,6 +87,7 @@ def build_application(
     app.add_handler(CommandHandler("mas_desocupados", most_inactive_command))
     app.add_handler(CommandHandler("gdb", gdb_command))
     app.add_handler(CommandHandler("stats_grupo", group_stats_command))
+    app.add_handler(CommandHandler("actividad_grupo", actividad_grupo_command))
     app.add_handler(CommandHandler("encuesta", encuesta_command))
     app.add_handler(CommandHandler("horoscopo", horoscopo_command))
     app.add_handler(CommandHandler("paquete", paquete_command))
