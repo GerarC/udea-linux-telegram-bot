@@ -1,7 +1,5 @@
 import hashlib
-from typing import Sequence, TypeVar
-
-T = TypeVar("T")
+from collections.abc import Sequence
 
 
 def deterministic_index(seed: str, size: int) -> int:
@@ -11,7 +9,7 @@ def deterministic_index(seed: str, size: int) -> int:
     return int(digest, 16) % size
 
 
-def deterministic_choice(seed: str, options: Sequence[T]) -> T:
+def deterministic_choice[T](seed: str, options: Sequence[T]) -> T:
     return options[deterministic_index(seed, len(options))]
 
 

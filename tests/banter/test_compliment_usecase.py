@@ -1,4 +1,4 @@
-from banter.domain.usecase.compliment_usecase import ComplimentUsecase, FALLBACK_COMPLIMENT
+from banter.domain.usecase.compliment_usecase import FALLBACK_COMPLIMENT, ComplimentUsecase
 from tests.banter.fakes import FakeBanterPhrasePort, FakeBanterStatsPort
 
 

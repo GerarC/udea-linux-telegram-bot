@@ -54,7 +54,10 @@ async def gdb_command(
         await message.reply_text(f"Todavía no hay información registrada de {name}.")
         return
 
-    logger.info("User info viewed", extra={"event": "user_info_viewed", "chat_id": message.chat_id, "target_id": target_id})
+    logger.info(
+        "User info viewed",
+        extra={"event": "user_info_viewed", "chat_id": message.chat_id, "target_id": target_id},
+    )
     lines = [f"🐛 <b>Debugueando a {name}</b>", ""]
     for section in info.sections:
         lines.append(f"<b>{html.escape(section.title)}</b>")

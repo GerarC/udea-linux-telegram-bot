@@ -3,8 +3,8 @@ from dependency_injector import containers, providers
 from activity.application.bootstrap.container import ActivityContainer
 from banter.application.bootstrap.container import BanterContainer
 from common.infrastructure.configuration.settings import load_settings
-from confessions.application.bootstrap.container import ConfessionsContainer
 from common.infrastructure.output.postgres.pool import init_pool
+from confessions.application.bootstrap.container import ConfessionsContainer
 from horoscope.application.bootstrap.container import HoroscopeContainer
 from news.application.bootstrap.container import NewsContainer
 from package_info.application.bootstrap.container import PackageInfoContainer

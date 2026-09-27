@@ -1,0 +1,12 @@
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# NOTE: load_dotenv() must run before importing anything that reads env vars at
+# import time (e.g. common.application.bootstrap.container's module-level
+# load_settings() call) - the import order here is intentional, not an oversight.
+"src/main.py" = ["E402"]
