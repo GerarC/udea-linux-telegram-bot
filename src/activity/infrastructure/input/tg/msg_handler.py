@@ -57,29 +57,44 @@ def _format_all_time(entries: list[UserActivity]) -> str:
     return "\n".join(lines)
 
 
+def _stat_line(label: str, value: str) -> str:
+    return f"<b>{label}:</b> {value}"
+
+
+def _bold_before_colon(line: str) -> str:
+    # NOTE: extra_lines come from other features as plain "Label: value" strings
+    # (see GroupStatsProviderPort) - escape first, then bold the label up to the
+    # first colon so they read consistently with this feature's own stat lines.
+    escaped = html.escape(line)
+    label, sep, value = escaped.partition(": ")
+    return f"<b>{label}:</b> {value}" if sep else escaped
+
+
 def _format_group_stats(stats: GroupStats) -> str:
     lines = [
         "📊 <b>Estadísticas del grupo</b>",
         "",
-        f"Mensajes este mes: {stats.messages_this_month}",
-        f"Mensajes en total: {stats.messages_all_time}",
-        f"Participantes activos este mes: {stats.active_participants_this_month}",
+        _stat_line("Mensajes este mes", f"{stats.messages_this_month:,}"),
+        _stat_line("Mensajes en total", f"{stats.messages_all_time:,}"),
+        _stat_line("Participantes activos este mes", str(stats.active_participants_this_month)),
     ]
 
     if stats.top_user_this_month is not None:
         top = stats.top_user_this_month
         name = html.escape(_display_name(top.user_id, top.username))
-        lines.append(f"Más activo del mes: {name} ({top.message_count} mensajes)")
+        lines.append(_stat_line("Más activo del mes", f"{name} ({top.message_count} mensajes)"))
 
     if stats.peak_hour is not None:
-        lines.append(f"Hora pico: {stats.peak_hour:02d}:00 – {(stats.peak_hour + 1) % 24:02d}:00")
+        lines.append(_stat_line("Hora pico", f"{stats.peak_hour:02d}:00 – {(stats.peak_hour + 1) % 24:02d}:00"))
 
     if stats.peak_weekday is not None:
-        lines.append(f"Día más activo: {WEEKDAY_LABELS[stats.peak_weekday]}")
+        lines.append(_stat_line("Día más activo", WEEKDAY_LABELS[stats.peak_weekday]))
 
     if stats.extra_lines:
         lines.append("")
-        lines.extend(html.escape(line) for line in stats.extra_lines)
+        lines.append("<b>Otros datos</b>")
+        for extra_line in stats.extra_lines:
+            lines.extend(f"• {_bold_before_colon(sub_line)}" for sub_line in extra_line.split("\n"))
 
     return "\n".join(lines)
 
