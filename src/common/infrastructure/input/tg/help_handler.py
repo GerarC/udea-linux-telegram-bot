@@ -25,9 +25,13 @@ persona, muestra los de ella en vez de los tuyos.
 Le manda un insulto random (con cariño) a quien menciones, o responde (reply) \
 al mensaje de la persona (el reply tiene prioridad si haces ambas cosas).
 
-🥰 <b>/cumplido @usuario</b> — <i>cualquiera</i>
-Le manda un cumplido random a quien menciones, o responde (reply) al mensaje \
+🥰 <b>/halagar @usuario</b> — <i>cualquiera</i>
+Le manda un halago random a quien menciones, o responde (reply) al mensaje \
 de la persona (el reply tiene prioridad si haces ambas cosas).
+
+➕ <b>/agregar_insulto frase</b> / <b>/agregar_halago frase</b> — <i>solo admins del grupo</i>
+Agrega un insulto o halago nuevo al banco de frases de este chat, para que \
+/insultar y /halagar puedan usarlo.
 
 📢 <b>/mas_desocupados [mes|total]</b> — <i>cualquiera</i>
 Top 5 de quienes más mensajes envían. Sin argumento muestra el mes actual (con quién \
