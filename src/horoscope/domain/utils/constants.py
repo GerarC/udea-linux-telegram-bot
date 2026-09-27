@@ -30,7 +30,6 @@ LUCKY_COLORS = [
     "naranja soldadura fría",
     "blanco whitespace",
     "cian syntax highlight",
-
     "rojo sangre de merge conflict",
     "azul profundo de un segfault",
     "verde fosforescente de matriz",
@@ -56,7 +55,6 @@ LUCKY_COLORS = [
     "ámbar de warning ignorado",
     "púrpura imperial de root",
     "ocre de documentación desactualizada",
-
     "rosa chicle de prepucio iluminado",
     "marrón chocolate de anomancia profunda",
     "beige arena de nalgas al sol",
@@ -65,7 +63,6 @@ LUCKY_COLORS = [
     "rosado tierno de ano en modo read-only",
     "marrón oscuro de rumpología avanzada",
     "piel canela de trasero bien cacheado",
-
     "gris depresión funcional",
     "negro vacío de anhedonia",
     "amarillo manía a las 3 a.m.",
@@ -88,7 +85,6 @@ MOODS = [
     "nostálgico de cuando internet andaba con módem",
     "ansioso esperando el CI",
     "zen, como root en producción sin miedo",
-
     "con el alma en modo immutable",
     "listo para hacer force push a la realidad",
     "en estado de race condition emocional",
@@ -99,7 +95,6 @@ MOODS = [
     "en rolling release de crisis existenciales",
     "documentando su dolor en formato man page",
     "con el corazón en LTS: estable pero sin features nuevas",
-
     "en pleno episodio de hiperfocalización inútil",
     "disociado pero todavía respondiendo tickets",
     "con ansiedad de rendimiento a nivel kernel",
@@ -110,7 +105,6 @@ MOODS = [
     "con pensamientos intrusivos en background",
     "en crisis pero con buenos logs",
     "resignado a su propio segmentation fault emocional",
-
     "con el culo en modo read-only por precaución",
     "sintiendo la rumpología del día en la lumbar",
     "con el ano en estado de race condition",
@@ -121,7 +115,6 @@ MOODS = [
     "con el trasero estable como Debian y el resto en llamas",
     "haciendo debugging profundo de su propia anomancia",
     "con el culo cacheado y el corazón en swap",
-
     "listo para corregir el orden de las carpetas del universo",
     "con ganas de reorganizar la vida de alguien sin que se lo pidan",
     "explicando un meme tres veces porque 'estaba mal contado'",
@@ -146,7 +139,6 @@ LUCKY_TIMES = [
     "8:08 AM (backup automático)",
     "2:22 PM (siesta post-almuerzo)",
     "10:10 PM (hora de romper el ambiente de staging)",
-
     "3:33 AM (hora del tercer kernel panic del día)",
     "4:20 AM (hora de contemplar el vacío y el uptime)",
     "5:00 AM (cuando el CI finalmente termina)",
@@ -157,19 +149,16 @@ LUCKY_TIMES = [
     "5:55 PM (hora de fingir que el día fue productivo)",
     "9:99 PM (hora que no existe, como tu documentación)",
     "2:47 AM (hora exacta del soft lockup emocional)",
-
     "3:17 AM (hora clásica de pensamientos intrusivos)",
     "4:04 AM (hora de la disociación nocturna)",
     "5:55 AM (hora en que la ansiedad madruga antes que vos)",
     "2:22 AM (hora de revisar conversaciones de hace tres días)",
     "1:01 AM (hora de renegociar con tu propio cerebro)",
-
     "3:69 AM (hora de la rumpología profunda)",
     "4:20 PM (hora de analizar la geometría de un trasero)",
     "2:34 AM (hora en que el ano entra en modo debug)",
     "6:09 PM (hora de checkear el estado del prepucio)",
     "11:34 PM (hora de la anomancia nocturna)",
-
     "3:00 AM (hora en que el universo te obliga a reorganizar carpetas)",
     "4:44 AM (hora de escribir un monólogo sobre por qué tu distro es superior)",
     "12:34 AM (hora de corregir a alguien en un grupo dormido)",

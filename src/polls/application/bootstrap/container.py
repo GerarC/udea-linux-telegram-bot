@@ -34,6 +34,4 @@ class PollsContainer(containers.DeclarativeContainer):
 
     user_info_provider = providers.Factory(PollsUserInfoProvider, poll_count_service=poll_count_usecase)
 
-    group_stats_provider = providers.Factory(
-        PollsGroupStatsProvider, chat_poll_count_service=chat_poll_count_usecase
-    )
+    group_stats_provider = providers.Factory(PollsGroupStatsProvider, chat_poll_count_service=chat_poll_count_usecase)

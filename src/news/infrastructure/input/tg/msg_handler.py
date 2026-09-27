@@ -30,9 +30,5 @@ async def on_message(
         "News item sent",
         extra={"event": "news_sent", "chat_id": message.chat_id, "source": item.source},
     )
-    text_body = (
-        f"📰 <b>{html.escape(item.title)}</b>\n"
-        f"<i>{html.escape(item.source)}</i>\n"
-        f"{html.escape(item.link)}"
-    )
+    text_body = f"📰 <b>{html.escape(item.title)}</b>\n<i>{html.escape(item.source)}</i>\n{html.escape(item.link)}"
     await message.reply_text(text_body, parse_mode=ParseMode.HTML)

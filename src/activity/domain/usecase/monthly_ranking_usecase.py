@@ -26,9 +26,7 @@ class MonthlyRankingUsecase(MonthlyRankingService):
             self._repository_port.get_monthly_ranking(chat_id, current, limit or self._ranking_limit),
             self._repository_port.get_monthly_ranking(chat_id, previous_month(current)),
         )
-        previous_positions = {
-            activity.user_id: position for position, activity in enumerate(previous_ranking, start=1)
-        }
+        previous_positions = {activity.user_id: position for position, activity in enumerate(previous_ranking, start=1)}
 
         return [
             MonthlyRankingEntry(

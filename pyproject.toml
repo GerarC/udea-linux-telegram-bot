@@ -10,3 +10,14 @@ select = ["E", "F", "I", "UP"]
 # import time (e.g. common.application.bootstrap.container's module-level
 # load_settings() call) - the import order here is intentional, not an oversight.
 "src/main.py" = ["E402"]
+
+[tool.coverage.run]
+source = ["src"]
+# NOTE: only domain/ usecases get fake-port unit tests (see tests/) - infrastructure/
+# (Telegram handlers, Postgres adapters) is exercised manually against the real bot/DB
+# instead, so it's excluded here rather than dragging the overall number down with
+# code this suite was never meant to cover.
+omit = ["src/*/infrastructure/*", "src/main.py"]
+
+[tool.coverage.report]
+skip_covered = false

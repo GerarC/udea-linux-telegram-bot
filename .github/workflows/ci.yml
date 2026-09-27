@@ -26,9 +26,11 @@ jobs:
 
       - run: ruff check .
 
+      - run: ruff format --check .
+
       - run: pyright --pythonpath "$(command -v python)"
 
-      - run: pytest -q
+      - run: pytest -q --cov=src --cov-report=term-missing --cov-fail-under=80
 
   deploy:
     name: Deploy app

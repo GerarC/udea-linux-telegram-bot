@@ -11,9 +11,7 @@ class PollParserUsecase(PollParserService):
         options = [option for option in parts[1:] if option]
 
         if not question:
-            raise PollValidationError(
-                "Falta la pregunta. Uso: /encuesta pregunta | opción1 | opción2 [| opción3 ...]"
-            )
+            raise PollValidationError("Falta la pregunta. Uso: /encuesta pregunta | opción1 | opción2 [| opción3 ...]")
         if len(question) > MAX_QUESTION_LENGTH:
             raise PollValidationError(f"La pregunta no puede tener más de {MAX_QUESTION_LENGTH} caracteres.")
         if len(options) < MIN_OPTIONS:

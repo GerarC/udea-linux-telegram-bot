@@ -143,8 +143,6 @@ async def my_points_command(
     )
     name = html.escape(display_name(target))
     level = html.escape(entry.level_label)
-    logger.info(
-        "Points viewed", extra={"event": "points_viewed", "chat_id": message.chat_id, "target_id": target.id}
-    )
+    logger.info("Points viewed", extra={"event": "points_viewed", "chat_id": message.chat_id, "target_id": target.id})
     text_body = f"{name} tiene {entry.user_points.points} Autispuntos.\nNivel de autismo: {level}."
     await message.reply_text(text_body, parse_mode=ParseMode.HTML)
