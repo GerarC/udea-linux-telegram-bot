@@ -8,9 +8,7 @@ class ConfessionDeletionUsecase(ConfessionDeletionService):
     def __init__(self, repository_port: ConfessionRepositoryPort) -> None:
         self._repository_port = repository_port
 
-    async def delete_confession(
-        self, chat_id: int, confession_id: int, requester_is_admin: bool
-    ) -> Confession | None:
+    async def delete_confession(self, chat_id: int, confession_id: int, requester_is_admin: bool) -> Confession | None:
         if not requester_is_admin:
             return None
 

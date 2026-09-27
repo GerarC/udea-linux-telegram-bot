@@ -47,9 +47,7 @@ class BanterContainer(containers.DeclarativeContainer):
 
     top_banter_stats_usecase = providers.Factory(TopBanterStatsUsecase, stats_port=stats_port)
 
-    user_info_provider = providers.Factory(
-        BanterUserInfoProvider, user_banter_stats_service=user_banter_stats_usecase
-    )
+    user_info_provider = providers.Factory(BanterUserInfoProvider, user_banter_stats_service=user_banter_stats_usecase)
 
     group_stats_provider = providers.Factory(
         BanterGroupStatsProvider, top_banter_stats_service=top_banter_stats_usecase

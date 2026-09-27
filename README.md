@@ -29,7 +29,7 @@ reales (paquetes, recordatorios, estadísticas), mitad tono irreverente
 
 ## Arquitectura
 
-Arquitectura hexagonal por feature: cada carpeta bajo `src/<feature>/` tiene
+Arquitectura limpia por feature: cada carpeta bajo `src/<feature>/` tiene
 su propio `domain/` (puro, sin dependencias de terceros) e
 `infrastructure/` (adapters de Telegram, Postgres, HTTP, etc.), conectados
 por inyección de dependencias (`dependency-injector`). El detalle completo —

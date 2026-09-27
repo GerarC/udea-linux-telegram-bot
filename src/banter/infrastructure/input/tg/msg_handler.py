@@ -3,7 +3,6 @@ import logging
 
 from dependency_injector.wiring import Provide, inject
 from telegram import Message, Update
-from telegram.error import TelegramError
 from telegram.ext import ContextTypes
 
 from banter.domain.api.add_compliment_service import AddComplimentService
@@ -12,6 +11,7 @@ from banter.domain.api.compliment_service import ComplimentService
 from banter.domain.api.insult_service import InsultService
 from banter.domain.api.target_resolver_service import TargetResolverService
 from common.application.bootstrap.container import ApplicationContainer
+from common.infrastructure.input.tg.admin_check import requester_is_admin
 
 logger = logging.getLogger(__name__)
 
@@ -42,19 +42,6 @@ async def _resolve_target(
             extra={"event": "banter_target_not_found", "chat_id": message.chat_id, "typed_username": typed_username},
         )
     return f"@{typed_username}", target_id, typed_username
-
-
-async def _requester_is_admin(update: Update, context: ContextTypes.DEFAULT_TYPE, message: Message) -> bool | None:
-    user = update.effective_user
-    if user is None:
-        return None
-
-    try:
-        member = await context.bot.get_chat_member(message.chat_id, user.id)
-    except TelegramError:
-        await message.reply_text("No pude verificar si eres admin del grupo. Intenta de nuevo en un momento.")
-        return None
-    return member.status in ("administrator", "creator")
 
 
 @inject
@@ -121,12 +108,12 @@ async def agregar_insulto_command(
         await message.reply_text("Uso: /agregar_insulto frase del insulto")
         return
 
-    requester_is_admin = await _requester_is_admin(update, context, message)
-    if requester_is_admin is None:
+    is_admin = await requester_is_admin(update, context, message)
+    if is_admin is None:
         return
 
     phrase = " ".join(context.args)
-    added = await add_insult_service.add(message.chat_id, requester_is_admin, phrase)
+    added = await add_insult_service.add(message.chat_id, is_admin, phrase)
     if not added:
         await message.reply_text("Solo los admins pueden agregar insultos.")
         return
@@ -149,12 +136,12 @@ async def agregar_halago_command(
         await message.reply_text("Uso: /agregar_halago frase del halago")
         return
 
-    requester_is_admin = await _requester_is_admin(update, context, message)
-    if requester_is_admin is None:
+    is_admin = await requester_is_admin(update, context, message)
+    if is_admin is None:
         return
 
     phrase = " ".join(context.args)
-    added = await add_compliment_service.add(message.chat_id, requester_is_admin, phrase)
+    added = await add_compliment_service.add(message.chat_id, is_admin, phrase)
     if not added:
         await message.reply_text("Solo los admins pueden agregar halagos.")
         return

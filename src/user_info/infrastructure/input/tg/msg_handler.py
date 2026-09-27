@@ -7,14 +7,11 @@ from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
 from common.application.bootstrap.container import ApplicationContainer
+from common.infrastructure.input.tg.display_name import display_name as format_display_name
 from user_info.domain.api.user_info_service import UserInfoService
 from user_info.domain.api.username_resolver_service import UsernameResolverService
 
 logger = logging.getLogger(__name__)
-
-
-def _display_name(user) -> str:
-    return f"@{user.username}" if user.username else user.full_name
 
 
 @inject
@@ -37,7 +34,7 @@ async def gdb_command(
     if reply_user is not None:
         target_id = reply_user.id
         target_username = reply_user.username or reply_user.full_name
-        display_name = _display_name(reply_user)
+        display_name = format_display_name(reply_user)
     elif context.args:
         typed_username = " ".join(context.args).lstrip("@")
         target_id = await username_resolver_service.resolve_username(message.chat_id, typed_username)
@@ -49,7 +46,7 @@ async def gdb_command(
             return
         target_id = user.id
         target_username = user.username or user.full_name
-        display_name = _display_name(user)
+        display_name = format_display_name(user)
 
     name = html.escape(display_name)
     info = await user_info_service.get_user_info(message.chat_id, target_id, target_username)
@@ -57,7 +54,10 @@ async def gdb_command(
         await message.reply_text(f"Todavía no hay información registrada de {name}.")
         return
 
-    logger.info("User info viewed", extra={"event": "user_info_viewed", "chat_id": message.chat_id, "target_id": target_id})
+    logger.info(
+        "User info viewed",
+        extra={"event": "user_info_viewed", "chat_id": message.chat_id, "target_id": target_id},
+    )
     lines = [f"🐛 <b>Debugueando a {name}</b>", ""]
     for section in info.sections:
         lines.append(f"<b>{html.escape(section.title)}</b>")

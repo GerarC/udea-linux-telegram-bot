@@ -8,6 +8,7 @@ from telegram.error import TelegramError
 from telegram.ext import ContextTypes
 
 from common.application.bootstrap.container import ApplicationContainer
+from common.infrastructure.input.tg.admin_check import requester_is_admin
 from confessions.domain.api.confession_deletion_service import ConfessionDeletionService
 from confessions.domain.api.confession_listing_service import ConfessionListingService
 from confessions.domain.api.confession_submission_service import ConfessionSubmissionService
@@ -22,7 +23,7 @@ USAGE_TEXT = "Uso: /confesar <texto> (entre 15 y 500 caracteres)."
 async def _format_confession(confession: Confession, title_service: ConfessionTitleService) -> str:
     title = await title_service.get_random_title()
     content = html.escape(confession.content)
-    return f"{title.emoji} <b>{title.title} #{confession.id}</b>\n\n" f'"{content}"\n\n' f"— {title.footer}"
+    return f'{title.emoji} <b>{title.title} #{confession.id}</b>\n\n"{content}"\n\n— {title.footer}'
 
 
 @inject
@@ -84,9 +85,7 @@ async def confesiones_command(
         await message.reply_text("Todavía no hay confesiones en este grupo.")
         return
 
-    logger.info(
-        "Confessions listed", extra={"event": "confessions_listed", "chat_id": message.chat_id}
-    )
+    logger.info("Confessions listed", extra={"event": "confessions_listed", "chat_id": message.chat_id})
 
     formatted = [await _format_confession(confession, title_service) for confession in confessions]
     await message.reply_html("\n\n".join(formatted))
@@ -96,9 +95,7 @@ async def confesiones_command(
 async def borrar_confesion_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    deletion_service: ConfessionDeletionService = Provide[
-        ApplicationContainer.confessions.confession_deletion_usecase
-    ],
+    deletion_service: ConfessionDeletionService = Provide[ApplicationContainer.confessions.confession_deletion_usecase],
 ) -> None:
     message = update.effective_message
     user = update.effective_user
@@ -117,14 +114,11 @@ async def borrar_confesion_command(
 
     chat_id = message.chat_id
 
-    try:
-        member = await context.bot.get_chat_member(chat_id, user.id)
-    except TelegramError:
-        await message.reply_text("No pude verificar si eres admin del grupo. Intenta de nuevo en un momento.")
+    is_admin = await requester_is_admin(update, context, message)
+    if is_admin is None:
         return
-    requester_is_admin = member.status in ("administrator", "creator")
 
-    result = await deletion_service.delete_confession(chat_id, confession_id, requester_is_admin)
+    result = await deletion_service.delete_confession(chat_id, confession_id, is_admin)
 
     if result is None:
         await message.reply_text("Solo los admins pueden borrar confesiones.")

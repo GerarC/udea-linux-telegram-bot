@@ -1,9 +1,12 @@
 import asyncpg
+from asyncpg.pool import PoolConnectionProxy
 
 from common.infrastructure.output.postgres.utils.constants import FIND_MEMBER_BY_USERNAME_SQL, UPSERT_MEMBER_SQL
 
 
-async def upsert_member(conn: asyncpg.Connection, chat_id: int, user_id: int, username: str) -> None:
+async def upsert_member(
+    conn: asyncpg.Connection | PoolConnectionProxy, chat_id: int, user_id: int, username: str
+) -> None:
     """Ensures a group_members row exists/is up to date for (chat_id, user_id).
 
     Any feature that needs to reference a user in a group should call this

@@ -14,7 +14,14 @@ async def fire_reminder_job(
     context: ContextTypes.DEFAULT_TYPE,
     reminder_firing_service: ReminderFiringService = Provide[ApplicationContainer.reminders.reminder_firing_usecase],
 ) -> None:
-    reminder_id = context.job.data["reminder_id"]
+    if context.job is None:
+        return
+
+    # NOTE: Job.data is typed as plain `object` (arbitrary user data) by PTB - narrow
+    # it to the dict shape recordar_command actually schedules it with.
+    job_data = context.job.data
+    assert isinstance(job_data, dict)
+    reminder_id = job_data["reminder_id"]
     reminder = await reminder_firing_service.fire_reminder(reminder_id)
     if reminder is None:
         logger.info("Reminder already fired, skipping", extra={"event": "reminder_skip", "reminder_id": reminder_id})

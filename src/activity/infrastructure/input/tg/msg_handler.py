@@ -17,14 +17,11 @@ from activity.domain.model.user_activity import UserActivity
 from activity.domain.utils.constants import WEEKDAY_LABELS
 from activity.infrastructure.input.tg.chart_renderer import render_monthly_activity_chart
 from common.application.bootstrap.container import ApplicationContainer
+from common.infrastructure.input.tg.display_name import display_name_from_record
 
 logger = logging.getLogger(__name__)
 
 USAGE_TEXT = "Uso: /mas_desocupados [mes|total] (sin argumento muestra ambos)"
-
-
-def _display_name(user_id: int, username: str) -> str:
-    return f"@{username}" if username else str(user_id)
 
 
 def _movement_badge(entry: MonthlyRankingEntry) -> str:
@@ -42,7 +39,7 @@ def _format_monthly(entries: list[MonthlyRankingEntry]) -> str:
         return "🗓️ <b>Top desocupados del mes</b>\n\nTodavía no hay mensajes registrados este mes."
     lines = ["🗓️ <b>Top desocupados del mes</b>", ""]
     for entry in entries:
-        name = html.escape(_display_name(entry.activity.user_id, entry.activity.username))
+        name = html.escape(display_name_from_record(entry.activity.user_id, entry.activity.username))
         lines.append(f"{entry.position}. {name} — {entry.activity.message_count} mensajes {_movement_badge(entry)}")
     return "\n".join(lines)
 
@@ -52,34 +49,49 @@ def _format_all_time(entries: list[UserActivity]) -> str:
         return "🏆 <b>Top desocupados de todo el tiempo</b>\n\nTodavía no hay mensajes registrados en este grupo."
     lines = ["🏆 <b>Top desocupados de todo el tiempo</b>", ""]
     for position, entry in enumerate(entries, start=1):
-        name = html.escape(_display_name(entry.user_id, entry.username))
+        name = html.escape(display_name_from_record(entry.user_id, entry.username))
         lines.append(f"{position}. {name} — {entry.message_count} mensajes")
     return "\n".join(lines)
+
+
+def _stat_line(label: str, value: str) -> str:
+    return f"<b>{label}:</b> {value}"
+
+
+def _bold_before_colon(line: str) -> str:
+    # NOTE: extra_lines come from other features as plain "Label: value" strings
+    # (see GroupStatsProviderPort) - escape first, then bold the label up to the
+    # first colon so they read consistently with this feature's own stat lines.
+    escaped = html.escape(line)
+    label, sep, value = escaped.partition(": ")
+    return f"<b>{label}:</b> {value}" if sep else escaped
 
 
 def _format_group_stats(stats: GroupStats) -> str:
     lines = [
         "📊 <b>Estadísticas del grupo</b>",
         "",
-        f"Mensajes este mes: {stats.messages_this_month}",
-        f"Mensajes en total: {stats.messages_all_time}",
-        f"Participantes activos este mes: {stats.active_participants_this_month}",
+        _stat_line("Mensajes este mes", f"{stats.messages_this_month:,}"),
+        _stat_line("Mensajes en total", f"{stats.messages_all_time:,}"),
+        _stat_line("Participantes activos este mes", str(stats.active_participants_this_month)),
     ]
 
     if stats.top_user_this_month is not None:
         top = stats.top_user_this_month
-        name = html.escape(_display_name(top.user_id, top.username))
-        lines.append(f"Más activo del mes: {name} ({top.message_count} mensajes)")
+        name = html.escape(display_name_from_record(top.user_id, top.username))
+        lines.append(_stat_line("Más activo del mes", f"{name} ({top.message_count} mensajes)"))
 
     if stats.peak_hour is not None:
-        lines.append(f"Hora pico: {stats.peak_hour:02d}:00 – {(stats.peak_hour + 1) % 24:02d}:00")
+        lines.append(_stat_line("Hora pico", f"{stats.peak_hour:02d}:00 – {(stats.peak_hour + 1) % 24:02d}:00"))
 
     if stats.peak_weekday is not None:
-        lines.append(f"Día más activo: {WEEKDAY_LABELS[stats.peak_weekday]}")
+        lines.append(_stat_line("Día más activo", WEEKDAY_LABELS[stats.peak_weekday]))
 
     if stats.extra_lines:
         lines.append("")
-        lines.extend(html.escape(line) for line in stats.extra_lines)
+        lines.append("<b>Otros datos</b>")
+        for extra_line in stats.extra_lines:
+            lines.extend(f"• {_bold_before_colon(sub_line)}" for sub_line in extra_line.split("\n"))
 
     return "\n".join(lines)
 

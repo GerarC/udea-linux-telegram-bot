@@ -14,7 +14,11 @@ from horoscope.domain.utils.constants import (
     TIMEZONE,
     VALID_SIGNS,
 )
-from horoscope.domain.utils.deterministic_pick import deterministic_choice, deterministic_index, deterministic_permutation
+from horoscope.domain.utils.deterministic_pick import (
+    deterministic_choice,
+    deterministic_index,
+    deterministic_permutation,
+)
 from horoscope.domain.utils.text_normalization import strip_accents
 
 FALLBACK_HOROSCOPE = "las estrellas están en mantenimiento programado, intenta más tarde"

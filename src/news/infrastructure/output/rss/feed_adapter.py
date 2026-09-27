@@ -42,9 +42,7 @@ class RssFeedAdapter(NewsFeedPort):
             try:
                 parsed = feedparser.parse(url)
             except Exception:
-                logging.exception(
-                    "Could not read feed %s", url, extra={"event": "feed_read_error", "feed_url": url}
-                )
+                logging.exception("Could not read feed %s", url, extra={"event": "feed_read_error", "feed_url": url})
                 continue
 
             if parsed.bozo and not parsed.entries:

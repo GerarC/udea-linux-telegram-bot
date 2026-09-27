@@ -1,11 +1,11 @@
+import logging
 import os
 from dataclasses import dataclass
-import logging
-
-logger = logging.getLogger(__name__)
 
 from news.domain.utils.constants import COOLDOWN_SECONDS
 from news.infrastructure.utils.constants import FEED_TTL_SECONDS, FEEDS
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)

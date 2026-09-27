@@ -27,17 +27,42 @@ _STEMS = [
     r"ciberseguridad",
     r"linux",
     # --- butt ---
-    r"cul[oa]", r"culet[ae]", r"culead[oa]", r"culear",
-    r"nalg(?:[ao]|ot[ao]|ón|ona)", r"pompis?", 
-    r"gl[uú]te[oa]", r"traser[oa]", r"cadera", r"cachet[ei]",
+    r"cul[oa]",
+    r"culet[ae]",
+    r"culead[oa]",
+    r"culear",
+    r"nalg(?:[ao]|ot[ao]|ón|ona)",
+    r"pompis?",
+    r"gl[uú]te[oa]",
+    r"traser[oa]",
+    r"cadera",
+    r"cachet[ei]",
     # --- risky stems (revisar falsos positivos) ---
-    r"an[oa]", r"ojet[ea]", r"rect[oa]",
+    r"an[oa]",
+    r"ojet[ea]",
+    r"rect[oa]",
     # --- penis ---
-    r"pene", r"pito", r"pija", r"verga", r"polla", r"pollita",
-    r"rabo", r"falo", r"pichul[oa]",
+    r"pene",
+    r"pito",
+    r"pija",
+    r"verga",
+    r"polla",
+    r"pollita",
+    r"rabo",
+    r"falo",
+    r"pichul[oa]",
     # --- vagina ---
-    r"vagina", r"vulva", r"coño", r"chocho", r"panocha",
-    r"cajeta", r"raj[ao]", r"hueco", r"concha", r"tot[oa]", r"cuca",
+    r"vagina",
+    r"vulva",
+    r"coño",
+    r"chocho",
+    r"panocha",
+    r"cajeta",
+    r"raj[ao]",
+    r"hueco",
+    r"concha",
+    r"tot[oa]",
+    r"cuca",
 ]
 
 TRIGGER_PATTERN = re.compile(
@@ -46,4 +71,4 @@ TRIGGER_PATTERN = re.compile(
 )
 
 COOLDOWN_SECONDS = 180  # minimum time between replies in the same chat
-RECENT_MEMORY = 40     # how many links to remember per chat to avoid repeats
+RECENT_MEMORY = 40  # how many links to remember per chat to avoid repeats
