@@ -42,6 +42,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
     group_stats_providers = providers.List(
         points.group_stats_provider,
         polls.group_stats_provider,
+        banter.group_stats_provider,
     )
 
     activity = providers.Container(ActivityContainer, pool=db_pool, group_stats_providers=group_stats_providers)
@@ -53,6 +54,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
         points.user_info_provider,
         activity.user_info_provider,
         polls.user_info_provider,
+        banter.user_info_provider,
     )
 
     user_info = providers.Container(UserInfoContainer, info_providers=user_info_providers, pool=db_pool)

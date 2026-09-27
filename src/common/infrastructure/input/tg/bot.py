@@ -2,7 +2,12 @@ from telegram import BotCommand
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
 from activity.infrastructure.input.tg.msg_handler import group_stats_command, most_inactive_command, track_message
-from banter.infrastructure.input.tg.msg_handler import cumplido_command, insultar_command
+from banter.infrastructure.input.tg.msg_handler import (
+    agregar_halago_command,
+    agregar_insulto_command,
+    halagar_command,
+    insultar_command,
+)
 from common.infrastructure.input.tg.error_handler import error_handler
 from common.infrastructure.input.tg.help_handler import help_command
 from confessions.infrastructure.input.tg.msg_handler import (
@@ -24,7 +29,9 @@ BOT_COMMANDS = [
     BotCommand("autisranking", "Muestra el ranking de Autispuntos"),
     BotCommand("ver_autispuntos", "Muestra tus Autispuntos (o los de alguien, con reply)"),
     BotCommand("insultar", "Insulta (con cariño) a un usuario"),
-    BotCommand("cumplido", "Le dice un cumplido a un usuario"),
+    BotCommand("halagar", "Le dice un halago a un usuario"),
+    BotCommand("agregar_insulto", "Agrega un insulto al chat (solo admins)"),
+    BotCommand("agregar_halago", "Agrega un halago al chat (solo admins)"),
     BotCommand("mas_desocupados", "Top 5 de quienes más mensajes envían"),
     BotCommand("gdb", "Debuguea tu existencia (o la de alguien, con reply o @usuario)"),
     BotCommand("stats_grupo", "Estadísticas del grupo: mensajes, hora pico, día más activo"),
@@ -68,7 +75,9 @@ def build_application(
     app.add_handler(CommandHandler("autisranking", ranking_command))
     app.add_handler(CommandHandler("ver_autispuntos", my_points_command))
     app.add_handler(CommandHandler("insultar", insultar_command))
-    app.add_handler(CommandHandler("cumplido", cumplido_command))
+    app.add_handler(CommandHandler("halagar", halagar_command))
+    app.add_handler(CommandHandler("agregar_insulto", agregar_insulto_command))
+    app.add_handler(CommandHandler("agregar_halago", agregar_halago_command))
     app.add_handler(CommandHandler("mas_desocupados", most_inactive_command))
     app.add_handler(CommandHandler("gdb", gdb_command))
     app.add_handler(CommandHandler("stats_grupo", group_stats_command))
