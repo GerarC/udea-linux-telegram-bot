@@ -2,12 +2,14 @@ from datetime import date
 
 import asyncpg
 
+from activity.domain.model.monthly_activity import MonthlyActivity
 from activity.domain.model.user_activity import UserActivity
 from activity.domain.spi.activity_repository_port import ActivityRepositoryPort
 from activity.infrastructure.output.postgres.utils.constants import (
     GET_ALL_TIME_RANKING_SQL,
     GET_ALL_TIME_STATS_SQL,
     GET_CHAT_ALL_TIME_TOTAL_SQL,
+    GET_CHAT_MONTHLY_HISTORY_SQL,
     GET_CHAT_MONTHLY_TOTALS_SQL,
     GET_MONTHLY_RANKING_SQL,
     GET_MONTHLY_STATS_SQL,
@@ -79,3 +81,8 @@ class PostgresActivityRepository(ActivityRepositoryPort):
     async def get_peak_weekday(self, chat_id: int) -> int | None:
         async with self._pool.acquire() as conn:
             return await conn.fetchval(GET_PEAK_WEEKDAY_SQL, chat_id)
+
+    async def get_chat_monthly_history(self, chat_id: int, since_month: date) -> list[MonthlyActivity]:
+        async with self._pool.acquire() as conn:
+            rows = await conn.fetch(GET_CHAT_MONTHLY_HISTORY_SQL, chat_id, since_month)
+        return [MonthlyActivity(period_month=row["period_month"], message_count=row["total"]) for row in rows]

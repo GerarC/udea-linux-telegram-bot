@@ -17,11 +17,11 @@ class BanterGroupStatsProvider(GroupStatsProviderPort):
         if top.most_insulted is None and top.most_complimented is None:
             return None
 
-        parts = []
+        lines = []
         if top.most_insulted is not None:
             name = _display_name(top.most_insulted.user_id, top.most_insulted.username)
-            parts.append(f"más insultado: {name} ({top.most_insulted.insults_received} veces)")
+            lines.append(f"Más insultado: {name} ({top.most_insulted.insults_received} veces)")
         if top.most_complimented is not None:
             name = _display_name(top.most_complimented.user_id, top.most_complimented.username)
-            parts.append(f"más halagado: {name} ({top.most_complimented.compliments_received} veces)")
-        return "😈 Banter: " + " · ".join(parts)
+            lines.append(f"Más halagado: {name} ({top.most_complimented.compliments_received} veces)")
+        return "\n".join(lines)

@@ -49,6 +49,9 @@ escribió algo en el grupo antes. Sin nada, muestra la tuya.
 Estadísticas del grupo: mensajes de este mes y de siempre, participantes activos, \
 quién más escribió este mes, hora pico y día más activo.
 
+📈 <b>/actividad_grupo</b> — <i>cualquiera</i>
+Gráfica de mensajes del grupo mes a mes, de los últimos 6 meses.
+
 🗳️ <b>/encuesta pregunta | opción1 | opción2</b> — <i>cualquiera</i>
 Crea una encuesta nativa de Telegram (2 a 10 opciones, separadas por <code>|</code>) \
 con resultados en vivo. No es anónima: se ve quién votó cada opción.

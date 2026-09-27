@@ -5,6 +5,7 @@ from activity.domain.usecase.activity_user_info_provider import ActivityUserInfo
 from activity.domain.usecase.all_time_ranking_usecase import AllTimeRankingUsecase
 from activity.domain.usecase.all_time_stats_usecase import AllTimeStatsUsecase
 from activity.domain.usecase.group_stats_usecase import GroupStatsUsecase
+from activity.domain.usecase.monthly_history_usecase import MonthlyHistoryUsecase
 from activity.domain.usecase.monthly_ranking_usecase import MonthlyRankingUsecase
 from activity.domain.usecase.monthly_stats_usecase import MonthlyStatsUsecase
 from activity.infrastructure.configuration.settings import load_activity_settings
@@ -58,6 +59,12 @@ class ActivityContainer(containers.DeclarativeContainer):
     )
 
     all_time_stats_usecase = providers.Factory(AllTimeStatsUsecase, repository_port=repository_port)
+
+    monthly_history_usecase = providers.Factory(
+        MonthlyHistoryUsecase,
+        repository_port=repository_port,
+        timezone=_settings.timezone,
+    )
 
     group_stats_usecase = providers.Factory(
         GroupStatsUsecase,

@@ -1,6 +1,7 @@
 from datetime import date
 from typing import Protocol
 
+from activity.domain.model.monthly_activity import MonthlyActivity
 from activity.domain.model.user_activity import UserActivity
 
 
@@ -39,4 +40,8 @@ class ActivityRepositoryPort(Protocol):
 
     async def get_peak_weekday(self, chat_id: int) -> int | None:
         """Returns the weekday (0=Monday..6=Sunday, local time) with the most messages ever, or None if empty."""
+        ...
+
+    async def get_chat_monthly_history(self, chat_id: int, since_month: date) -> list[MonthlyActivity]:
+        """Returns one entry per month with at least one message, since_month..current, ordered ascending."""
         ...
