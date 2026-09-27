@@ -33,6 +33,9 @@ async def recordar_command(
     raw_text = " ".join(context.args)
     parsed = reminder_parser_service.parse(raw_text)
 
+    if context.job_queue is None:
+        return
+
     username = user.username or user.full_name
     reminder = await reminder_service.schedule_reminder(message.chat_id, user.id, username, parsed)
 

@@ -59,6 +59,9 @@ async def grant_points_command(
     target = message.reply_to_message.from_user
     chat_id = message.chat_id
 
+    if granter is None:
+        return
+
     granter_is_admin = await requester_is_admin(update, context, message)
     if granter_is_admin is None:
         return

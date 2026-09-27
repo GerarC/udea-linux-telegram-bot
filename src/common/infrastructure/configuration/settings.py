@@ -25,12 +25,21 @@ def load_settings() -> Settings:
     if missing:
         raise SystemExit(f"Missing environment variable(s): {', '.join(missing)}")
 
+    telegram_bot_token = required["TELEGRAM_BOT_TOKEN"]
+    db_host = required["DB_HOST"]
+    db_name = required["DB_NAME"]
+    db_user = required["DB_USER"]
+    db_password = required["DB_PASSWORD"]
+    # NOTE: narrows each from `str | None` to `str` for the type checker - the
+    # missing-variable check above already guarantees none of these are empty/None.
+    assert telegram_bot_token and db_host and db_name and db_user and db_password
+
     return Settings(
-        telegram_bot_token=required["TELEGRAM_BOT_TOKEN"],
+        telegram_bot_token=telegram_bot_token,
         log_level=os.environ.get("LOG_LEVEL", "INFO"),
-        db_host=required["DB_HOST"],
+        db_host=db_host,
         db_port=int(os.environ.get("DB_PORT", 5432)),
-        db_name=required["DB_NAME"],
-        db_user=required["DB_USER"],
-        db_password=required["DB_PASSWORD"],
+        db_name=db_name,
+        db_user=db_user,
+        db_password=db_password,
     )

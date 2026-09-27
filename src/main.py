@@ -50,12 +50,15 @@ def main() -> None:
             )
 
     async def on_startup(application) -> None:
-        await container.init_resources()
+        # NOTE: dependency-injector's stubs type init_resources()/shutdown_resources()
+        # as returning None instead of an awaitable, even though they're async here
+        # (the container has async Resource providers) - a stub gap, not a real issue.
+        await container.init_resources()  # pyright: ignore[reportGeneralTypeIssues]
         await register_commands(application)
         await _reschedule_pending_reminders(application)
 
     async def on_shutdown(_app) -> None:
-        await container.shutdown_resources()
+        await container.shutdown_resources()  # pyright: ignore[reportGeneralTypeIssues]
 
     app = build_application(settings.telegram_bot_token, post_init=on_startup, post_shutdown=on_shutdown)
     app.run_polling(allowed_updates=Update.ALL_TYPES)
