@@ -4,10 +4,11 @@ import logging
 from dependency_injector.wiring import Provide, inject
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.error import TelegramError
 from telegram.ext import ContextTypes
 
 from common.application.bootstrap.container import ApplicationContainer
+from common.infrastructure.input.tg.admin_check import requester_is_admin
+from common.infrastructure.input.tg.display_name import display_name
 from points.domain.api.points_service import PointsService
 from points.domain.api.ranking_service import RankingService
 from points.domain.api.user_points_service import UserPointsService
@@ -16,10 +17,6 @@ from points.domain.model.ranking_entry import RankingEntry
 logger = logging.getLogger(__name__)
 
 RANK_EMOJI_LEVELS = ("🧠🧠🧠", "🧠🧠", "🧠")
-
-
-def _display_name(user) -> str:
-    return f"@{user.username}" if user.username else user.full_name
 
 
 def _format_ranking(ranking: list[RankingEntry]) -> str:
@@ -62,12 +59,9 @@ async def grant_points_command(
     target = message.reply_to_message.from_user
     chat_id = message.chat_id
 
-    try:
-        member = await context.bot.get_chat_member(chat_id, granter.id)
-    except TelegramError:
-        await message.reply_text("No pude verificar si eres admin del grupo. Intenta de nuevo en un momento.")
+    granter_is_admin = await requester_is_admin(update, context, message)
+    if granter_is_admin is None:
         return
-    granter_is_admin = member.status in ("administrator", "creator")
 
     result = await points_service.grant_points(
         chat_id=chat_id,
@@ -92,8 +86,8 @@ async def grant_points_command(
         },
     )
 
-    granter_name = html.escape(_display_name(granter))
-    target_name = html.escape(_display_name(target))
+    granter_name = html.escape(display_name(granter))
+    target_name = html.escape(display_name(target))
     verb = "le ha otorgado" if amount >= 0 else "le ha quitado"
     amount_text = f"+{amount}" if amount >= 0 else str(abs(amount))
 
@@ -144,7 +138,7 @@ async def my_points_command(
         user_id=target.id,
         username=target.username or target.full_name,
     )
-    name = html.escape(_display_name(target))
+    name = html.escape(display_name(target))
     level = html.escape(entry.level_label)
     logger.info(
         "Points viewed", extra={"event": "points_viewed", "chat_id": message.chat_id, "target_id": target.id}

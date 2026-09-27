@@ -26,13 +26,27 @@ inesperada).
   que el handler global la traduzca a un mensaje de usuario. Un `try/except`
   puntual en el handler solo se justifica en dos casos: (a) el mensaje de
   error depende de contexto que el handler tiene y la excepción no (ver
-  `points/infrastructure/input/tg/msg_handler.py`, el catch de
+  `common/infrastructure/input/tg/admin_check.py`, el catch de
   `TelegramError` al verificar si el usuario es admin), o (b) la acción es
   una limpieza *best-effort* que no debe tumbar el resto del comando si falla
   (ver `polls/infrastructure/input/tg/msg_handler.py`, el catch de
   `TelegramError` al borrar el mensaje de `/encuesta` — requiere que el bot
   sea admin del grupo con permiso de borrar mensajes; si no lo es, la
   encuesta ya se creó bien y el comando no debe fallar por eso).
+
+## Verificar si el usuario es admin del grupo
+
+Cualquier comando solo-admin (ej. `/autispuntos`, `/borrar_confesion`,
+`/agregar_insulto`) usa `requester_is_admin(update, context, message)` de
+`common/infrastructure/input/tg/admin_check.py` — no repetir el
+`try/except TelegramError` + `context.bot.get_chat_member(...)` inline en
+cada feature. La función devuelve `True`/`False`, o `None` cuando el check no
+se pudo resolver (ya le respondió al usuario en ese caso) — el handler debe
+hacer `return` de inmediato si el resultado es `None`, igual que ante
+cualquier otra validación fallida. `None` nunca significa "no es admin": ese
+caso siempre es `False`, que se pasa tal cual al usecase (que decide
+rechazar o no — ver `points.domain.usecase.points_usecase.PointsUsecase`
+como referencia del patrón "rechazar devolviendo `None`/`False`").
 
 ## Varios handlers sobre el mismo tipo de update (PTB)
 

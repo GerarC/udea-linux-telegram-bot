@@ -2,6 +2,8 @@ from banter.domain.api.top_banter_stats_service import TopBanterStatsService
 from common.domain.spi.group_stats_provider_port import GroupStatsProviderPort
 
 
+# NOTE: duplicates common.infrastructure.input.tg.display_name.display_name_from_record
+# on purpose - this is domain/, which never imports infrastructure (see domain-architecture.md).
 def _display_name(user_id: int, username: str) -> str:
     return f"@{username}" if username else str(user_id)
 

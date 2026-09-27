@@ -17,14 +17,11 @@ from activity.domain.model.user_activity import UserActivity
 from activity.domain.utils.constants import WEEKDAY_LABELS
 from activity.infrastructure.input.tg.chart_renderer import render_monthly_activity_chart
 from common.application.bootstrap.container import ApplicationContainer
+from common.infrastructure.input.tg.display_name import display_name_from_record
 
 logger = logging.getLogger(__name__)
 
 USAGE_TEXT = "Uso: /mas_desocupados [mes|total] (sin argumento muestra ambos)"
-
-
-def _display_name(user_id: int, username: str) -> str:
-    return f"@{username}" if username else str(user_id)
 
 
 def _movement_badge(entry: MonthlyRankingEntry) -> str:
@@ -42,7 +39,7 @@ def _format_monthly(entries: list[MonthlyRankingEntry]) -> str:
         return "🗓️ <b>Top desocupados del mes</b>\n\nTodavía no hay mensajes registrados este mes."
     lines = ["🗓️ <b>Top desocupados del mes</b>", ""]
     for entry in entries:
-        name = html.escape(_display_name(entry.activity.user_id, entry.activity.username))
+        name = html.escape(display_name_from_record(entry.activity.user_id, entry.activity.username))
         lines.append(f"{entry.position}. {name} — {entry.activity.message_count} mensajes {_movement_badge(entry)}")
     return "\n".join(lines)
 
@@ -52,7 +49,7 @@ def _format_all_time(entries: list[UserActivity]) -> str:
         return "🏆 <b>Top desocupados de todo el tiempo</b>\n\nTodavía no hay mensajes registrados en este grupo."
     lines = ["🏆 <b>Top desocupados de todo el tiempo</b>", ""]
     for position, entry in enumerate(entries, start=1):
-        name = html.escape(_display_name(entry.user_id, entry.username))
+        name = html.escape(display_name_from_record(entry.user_id, entry.username))
         lines.append(f"{position}. {name} — {entry.message_count} mensajes")
     return "\n".join(lines)
 
@@ -81,7 +78,7 @@ def _format_group_stats(stats: GroupStats) -> str:
 
     if stats.top_user_this_month is not None:
         top = stats.top_user_this_month
-        name = html.escape(_display_name(top.user_id, top.username))
+        name = html.escape(display_name_from_record(top.user_id, top.username))
         lines.append(_stat_line("Más activo del mes", f"{name} ({top.message_count} mensajes)"))
 
     if stats.peak_hour is not None:
