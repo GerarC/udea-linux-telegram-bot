@@ -9,6 +9,7 @@ from telegram.ext import ContextTypes
 from common.application.bootstrap.container import ApplicationContainer
 from common.infrastructure.input.tg.display_name import display_name as format_display_name
 from common.infrastructure.input.tg.display_name import mention_html
+from common.infrastructure.input.tg.mentioned_user import mentioned_user
 from user_info.domain.api.user_info_service import UserInfoService
 from user_info.domain.api.username_resolver_service import UsernameResolverService
 
@@ -32,6 +33,8 @@ async def gdb_command(
     # us the real User straight away - a typed @username only resolves if the bot has
     # already seen that person post in this chat (see UsernameResolverService).
     reply_user = message.reply_to_message.from_user if message.reply_to_message else None
+    if reply_user is None:
+        reply_user = mentioned_user(message)
     if reply_user is not None:
         target_id = reply_user.id
         target_username = reply_user.username or ""
