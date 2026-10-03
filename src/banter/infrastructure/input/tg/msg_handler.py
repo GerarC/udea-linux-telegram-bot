@@ -14,6 +14,7 @@ from common.application.bootstrap.container import ApplicationContainer
 from common.infrastructure.input.tg.admin_check import requester_is_admin
 from common.infrastructure.input.tg.display_name import display_name as format_display_name
 from common.infrastructure.input.tg.display_name import mention_html
+from common.infrastructure.input.tg.mentioned_user import mentioned_user
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,8 @@ async def _resolve_target(
     # NOTE: reply-to-message takes priority over a typed @username, since it
     # unambiguously identifies a real Telegram user instead of a lookup that can miss.
     reply_user = message.reply_to_message.from_user if message.reply_to_message else None
+    if reply_user is None:
+        reply_user = mentioned_user(message)
     if reply_user is not None:
         display_name = format_display_name(reply_user)
         return display_name, reply_user.id, reply_user.username or "", reply_user.full_name
