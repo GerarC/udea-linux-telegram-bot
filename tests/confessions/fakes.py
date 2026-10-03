@@ -9,7 +9,9 @@ class FakeConfessionRepository(ConfessionRepositoryPort):
         self.confessions: dict[int, Confession] = {}
         self._next_id = 1
 
-    async def create_confession(self, chat_id: int, user_id: int, username: str, content: str) -> Confession:
+    async def create_confession(
+        self, chat_id: int, user_id: int, username: str, full_name: str, content: str
+    ) -> Confession:
         confession = Confession(
             id=self._next_id,
             chat_id=chat_id,

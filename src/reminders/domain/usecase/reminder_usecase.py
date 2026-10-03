@@ -10,12 +10,15 @@ class ReminderUsecase(ReminderService):
     def __init__(self, repository_port: ReminderRepositoryPort) -> None:
         self._repository_port = repository_port
 
-    async def schedule_reminder(self, chat_id: int, user_id: int, username: str, parsed: ParsedReminder) -> Reminder:
+    async def schedule_reminder(
+        self, chat_id: int, user_id: int, username: str, full_name: str, parsed: ParsedReminder
+    ) -> Reminder:
         remind_at = datetime.now(UTC) + timedelta(minutes=parsed.minutes)
         return await self._repository_port.create_reminder(
             chat_id=chat_id,
             user_id=user_id,
             username=username,
+            full_name=full_name,
             message=parsed.message,
             remind_at=remind_at,
         )

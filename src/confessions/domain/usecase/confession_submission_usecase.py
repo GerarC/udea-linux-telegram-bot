@@ -10,11 +10,13 @@ class ConfessionSubmissionUsecase(ConfessionSubmissionService):
     def __init__(self, repository_port: ConfessionRepositoryPort) -> None:
         self._repository_port = repository_port
 
-    async def submit_confession(self, chat_id: int, user_id: int, username: str, content: str) -> Confession:
+    async def submit_confession(
+        self, chat_id: int, user_id: int, username: str, full_name: str, content: str
+    ) -> Confession:
         normalized = content.strip()
         if len(normalized) < MIN_CONTENT_LENGTH:
             raise ConfessionTooShortError()
         if len(normalized) > MAX_CONTENT_LENGTH:
             raise ConfessionTooLongError()
 
-        return await self._repository_port.create_confession(chat_id, user_id, username, normalized)
+        return await self._repository_port.create_confession(chat_id, user_id, username, full_name, normalized)

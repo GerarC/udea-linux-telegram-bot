@@ -7,6 +7,7 @@ from activity.domain.model.group_stats import GroupStats
 from activity.domain.spi.activity_repository_port import ActivityRepositoryPort
 from activity.domain.utils.clock import current_month
 from activity.domain.utils.constants import DEFAULT_TIMEZONE
+from common.domain.model.group_stat_line import GroupStatLine
 from common.domain.spi.group_stats_provider_port import GroupStatsProviderPort
 
 
@@ -38,7 +39,7 @@ class GroupStatsUsecase(GroupStatsService):
             self._repository_port.get_monthly_ranking(chat_id, current, limit=1),
             self._repository_port.get_peak_hour(chat_id),
             self._repository_port.get_peak_weekday(chat_id),
-            asyncio.gather(*(self._safe_stat_line(provider, chat_id) for provider in self._group_stats_providers)),
+            asyncio.gather(*(self._safe_stat_lines(provider, chat_id) for provider in self._group_stats_providers)),
         )
 
         return GroupStats(
@@ -48,18 +49,18 @@ class GroupStatsUsecase(GroupStatsService):
             top_user_this_month=top_ranking[0] if top_ranking else None,
             peak_hour=peak_hour,
             peak_weekday=peak_weekday,
-            extra_lines=[line for line in extra_line_results if line is not None],
+            extra_lines=[line for lines in extra_line_results for line in lines],
         )
 
     @staticmethod
-    async def _safe_stat_line(provider: GroupStatsProviderPort, chat_id: int) -> str | None:
-        # NOTE: a failing provider (e.g. its DB is unreachable) only drops its own line
+    async def _safe_stat_lines(provider: GroupStatsProviderPort, chat_id: int) -> list[GroupStatLine]:
+        # NOTE: a failing provider (e.g. its DB is unreachable) only drops its own lines
         # instead of failing all of /stats_grupo - same policy as UserInfoUsecase.
         try:
-            return await provider.get_group_stat_line(chat_id)
+            return await provider.get_group_stat_lines(chat_id)
         except Exception:
             logging.exception(
                 "group_stats provider failed",
                 extra={"event": "group_stats_provider_failed", "provider": type(provider).__name__},
             )
-            return None
+            return []

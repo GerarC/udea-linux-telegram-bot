@@ -12,6 +12,7 @@ class PointsService(Protocol):
         granter_is_admin: bool,
         target_id: int,
         target_username: str,
+        target_full_name: str,
         amount: int,
     ) -> GrantResult | None:
         """Returns None when the granter is not an admin (request denied)."""

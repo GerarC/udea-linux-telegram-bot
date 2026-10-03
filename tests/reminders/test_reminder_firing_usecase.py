@@ -6,7 +6,7 @@ from tests.reminders.fakes import FakeReminderRepository
 
 async def test_fire_reminder_returns_the_reminder_when_still_pending():
     repo = FakeReminderRepository()
-    reminder = await repo.create_reminder(1, 42, "fulano", "algo", datetime.now(UTC))
+    reminder = await repo.create_reminder(1, 42, "fulano", "fulano", "algo", datetime.now(UTC))
     usecase = ReminderFiringUsecase(repository_port=repo)
 
     fired = await usecase.fire_reminder(reminder.id)
@@ -17,7 +17,7 @@ async def test_fire_reminder_returns_the_reminder_when_still_pending():
 
 async def test_fire_reminder_returns_none_when_already_fired():
     repo = FakeReminderRepository()
-    reminder = await repo.create_reminder(1, 42, "fulano", "algo", datetime.now(UTC))
+    reminder = await repo.create_reminder(1, 42, "fulano", "fulano", "algo", datetime.now(UTC))
     usecase = ReminderFiringUsecase(repository_port=repo)
 
     await usecase.fire_reminder(reminder.id)

@@ -80,14 +80,14 @@ DO UPDATE SET compliments_received = banter_stats.compliments_received + 1
 """
 
 GET_BANTER_STATS_SQL = """
-SELECT gm.username, bs.insults_received, bs.compliments_received
+SELECT gm.username, gm.full_name, bs.insults_received, bs.compliments_received
 FROM banter_stats bs
 JOIN group_members gm ON gm.chat_id = bs.chat_id AND gm.user_id = bs.user_id
 WHERE bs.chat_id = $1 AND bs.user_id = $2
 """
 
 GET_MOST_INSULTED_SQL = """
-SELECT gm.user_id, gm.username, bs.insults_received, bs.compliments_received
+SELECT gm.user_id, gm.username, gm.full_name, bs.insults_received, bs.compliments_received
 FROM banter_stats bs
 JOIN group_members gm ON gm.chat_id = bs.chat_id AND gm.user_id = bs.user_id
 WHERE bs.chat_id = $1 AND bs.insults_received > 0
@@ -96,7 +96,7 @@ LIMIT 1
 """
 
 GET_MOST_COMPLIMENTED_SQL = """
-SELECT gm.user_id, gm.username, bs.insults_received, bs.compliments_received
+SELECT gm.user_id, gm.username, gm.full_name, bs.insults_received, bs.compliments_received
 FROM banter_stats bs
 JOIN group_members gm ON gm.chat_id = bs.chat_id AND gm.user_id = bs.user_id
 WHERE bs.chat_id = $1 AND bs.compliments_received > 0

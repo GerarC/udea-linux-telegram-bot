@@ -74,8 +74,15 @@ user_id)`. El username **nunca** se duplica en la tabla de la feature: vive una
 sola vez en `group_members`
 (`common/infrastructure/output/postgres/schema/group_members.py`).
 
+- `group_members` guarda DOS campos de nombre: `username` (el @ real de Telegram,
+  `''` si el usuario no tiene) y `full_name` (nombre completo, siempre presente).
+  Nunca mezclarlos: los handlers pasan `user.username or ""` y `user.full_name`.
+  Para etiquetar/mostrar a alguien se usa `display_name_from_record(user_id, username,
+  full_name)` (`common/infrastructure/input/tg/display_name.py`), que arma una mención
+  real por id. Un `full_name` vacío en el upsert (ej. alguien objetivo de un `@usuario`
+  tipeado) NO pisa el que ya está guardado.
 - Antes de insertar/actualizar su propia fila, la feature llama
-  `upsert_member(conn, chat_id, user_id, username)` (de
+  `upsert_member(conn, chat_id, user_id, username, full_name)` (de
   `common/infrastructure/output/postgres/utils/helpers.py`) **dentro de la
   misma transacción**, para garantizar que la fila en `group_members` exista
   antes de que la FK la necesite.

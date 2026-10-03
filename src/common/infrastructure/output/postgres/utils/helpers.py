@@ -5,14 +5,15 @@ from common.infrastructure.output.postgres.utils.constants import FIND_MEMBER_BY
 
 
 async def upsert_member(
-    conn: asyncpg.Connection | PoolConnectionProxy, chat_id: int, user_id: int, username: str
+    conn: asyncpg.Connection | PoolConnectionProxy, chat_id: int, user_id: int, username: str, full_name: str
 ) -> None:
     """Ensures a group_members row exists/is up to date for (chat_id, user_id).
 
     Any feature that needs to reference a user in a group should call this
     (within its own transaction) before writing rows that FK to group_members.
+    `username` is the real Telegram username, "" when the user has none.
     """
-    await conn.execute(UPSERT_MEMBER_SQL, chat_id, user_id, username)
+    await conn.execute(UPSERT_MEMBER_SQL, chat_id, user_id, username, full_name)
 
 
 async def find_member_by_username(pool: asyncpg.Pool, chat_id: int, username: str) -> int | None:

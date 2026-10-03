@@ -55,19 +55,24 @@ feature (`activity`, que ya calcula sus propios números) — otras features
 solo le APORTAN una línea extra, no lo reemplazan:
 
 - `common/domain/spi/group_stats_provider_port.py` define
-  `GroupStatsProviderPort` (`get_group_stat_line(chat_id) -> str | None`).
-  Es el único archivo de este mecanismo que vive en `common` — el contrato.
+  `GroupStatsProviderPort` (`get_group_stat_lines(chat_id) -> list[GroupStatLine]`,
+  lista vacía si no hay nada que mostrar). `common/domain/model/group_stat_line.py`
+  define `GroupStatLine` (`label`, `value`, `mention: GroupStatMention | None`) —
+  estructurado, NO texto plano, para que `domain/` nunca arme HTML: si la línea
+  etiqueta a alguien, el provider solo pasa `user_id`+`username` y el handler de
+  `activity` (`_format_extra_line`) lo renderiza como mención real con
+  `display_name_from_record`. Esos dos archivos son el contrato en `common`.
 - Cualquier feature que quiera aportar una línea (ej. `polls`, `points`)
   implementa este puerto en su propio `domain/usecase/`
   (`polls_group_stats_provider.py`, `points_group_stats_provider.py`),
   envolviendo su propio `<Feature>Service` — igual regla que en `user_info`:
   domain puro, sin acceder a otra feature. `PointsGroupStatsProvider` aporta
-  "Más autista: @user (N Autispuntos, nivel)" reusando `get_ranking(chat_id,
+  la línea "Más autista" (mención + "(N Autispuntos, nivel)") reusando `get_ranking(chat_id,
   limit=1)`, el mismo método que ya usa `/autisranking`.
 - `ActivityUsecase` recibe `group_stats_providers: list[GroupStatsProviderPort]`
   (default `[]` si no se inyecta ninguno) y hace `asyncio.gather` sobre ellos
-  igual que `UserInfoUsecase`, agregando las líneas no-`None` a
-  `GroupStats.extra_lines`. Que `activity` dependa de este puerto de `common`
+  igual que `UserInfoUsecase`, aplanando las listas en
+  `GroupStats.extra_lines` (`list[GroupStatLine]`). Que `activity` dependa de este puerto de `common`
   no rompe la regla de pureza de dominio (es la misma excepción del shared kernel).
 - El `ApplicationContainer` raíz arma `group_stats_providers =
   providers.List(points.group_stats_provider, polls.group_stats_provider, ...)`
