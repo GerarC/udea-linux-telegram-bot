@@ -7,4 +7,5 @@ from common.domain.model.user_info_section import UserInfoSection
 class UserInfo:
     user_id: int
     username: str
+    full_name: str
     sections: list[UserInfoSection]

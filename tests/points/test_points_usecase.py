@@ -12,7 +12,7 @@ async def test_grant_points_rejected_when_not_admin():
     usecase = _make_usecase(repo)
 
     result = await usecase.grant_points(
-        chat_id=1, granter_is_admin=False, target_id=42, target_username="fulano", amount=5
+        chat_id=1, granter_is_admin=False, target_id=42, target_username="fulano", target_full_name="fulano", amount=5
     )
 
     assert result is None
@@ -24,7 +24,7 @@ async def test_grant_points_accepted_when_admin_and_builds_ranking():
     usecase = _make_usecase(repo)
 
     result = await usecase.grant_points(
-        chat_id=1, granter_is_admin=True, target_id=42, target_username="fulano", amount=5
+        chat_id=1, granter_is_admin=True, target_id=42, target_username="fulano", target_full_name="fulano", amount=5
     )
 
     assert result.target.points == 5
@@ -36,9 +36,11 @@ async def test_grant_points_accumulates_across_calls_including_negative_amounts(
     repo = FakePointsRepository()
     usecase = _make_usecase(repo)
 
-    await usecase.grant_points(chat_id=1, granter_is_admin=True, target_id=42, target_username="fulano", amount=5)
+    await usecase.grant_points(
+        chat_id=1, granter_is_admin=True, target_id=42, target_username="fulano", target_full_name="fulano", amount=5
+    )
     result = await usecase.grant_points(
-        chat_id=1, granter_is_admin=True, target_id=42, target_username="fulano", amount=-2
+        chat_id=1, granter_is_admin=True, target_id=42, target_username="fulano", target_full_name="fulano", amount=-2
     )
 
     assert result.target.points == 3

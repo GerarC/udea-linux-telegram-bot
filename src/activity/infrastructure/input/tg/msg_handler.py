@@ -17,6 +17,7 @@ from activity.domain.model.user_activity import UserActivity
 from activity.domain.utils.constants import WEEKDAY_LABELS
 from activity.infrastructure.input.tg.chart_renderer import render_monthly_activity_chart
 from common.application.bootstrap.container import ApplicationContainer
+from common.domain.model.group_stat_line import GroupStatLine
 from common.infrastructure.input.tg.display_name import display_name_from_record
 
 logger = logging.getLogger(__name__)
@@ -39,7 +40,7 @@ def _format_monthly(entries: list[MonthlyRankingEntry]) -> str:
         return "🗓️ <b>Top desocupados del mes</b>\n\nTodavía no hay mensajes registrados este mes."
     lines = ["🗓️ <b>Top desocupados del mes</b>", ""]
     for entry in entries:
-        name = html.escape(display_name_from_record(entry.activity.user_id, entry.activity.username))
+        name = display_name_from_record(entry.activity.user_id, entry.activity.username, entry.activity.full_name)
         lines.append(f"{entry.position}. {name} — {entry.activity.message_count} mensajes {_movement_badge(entry)}")
     return "\n".join(lines)
 
@@ -49,7 +50,7 @@ def _format_all_time(entries: list[UserActivity]) -> str:
         return "🏆 <b>Top desocupados de todo el tiempo</b>\n\nTodavía no hay mensajes registrados en este grupo."
     lines = ["🏆 <b>Top desocupados de todo el tiempo</b>", ""]
     for position, entry in enumerate(entries, start=1):
-        name = html.escape(display_name_from_record(entry.user_id, entry.username))
+        name = display_name_from_record(entry.user_id, entry.username, entry.full_name)
         lines.append(f"{position}. {name} — {entry.message_count} mensajes")
     return "\n".join(lines)
 
@@ -58,13 +59,13 @@ def _stat_line(label: str, value: str) -> str:
     return f"<b>{label}:</b> {value}"
 
 
-def _bold_before_colon(line: str) -> str:
-    # NOTE: extra_lines come from other features as plain "Label: value" strings
-    # (see GroupStatsProviderPort) - escape first, then bold the label up to the
-    # first colon so they read consistently with this feature's own stat lines.
-    escaped = html.escape(line)
-    label, sep, value = escaped.partition(": ")
-    return f"<b>{label}:</b> {value}" if sep else escaped
+def _format_extra_line(line: GroupStatLine) -> str:
+    value = html.escape(line.value)
+    if line.mention is not None:
+        value = (
+            f"{display_name_from_record(line.mention.user_id, line.mention.username, line.mention.full_name)} {value}"
+        )
+    return _stat_line(html.escape(line.label), value)
 
 
 def _format_group_stats(stats: GroupStats) -> str:
@@ -78,7 +79,7 @@ def _format_group_stats(stats: GroupStats) -> str:
 
     if stats.top_user_this_month is not None:
         top = stats.top_user_this_month
-        name = html.escape(display_name_from_record(top.user_id, top.username))
+        name = display_name_from_record(top.user_id, top.username, top.full_name)
         lines.append(_stat_line("Más activo del mes", f"{name} ({top.message_count} mensajes)"))
 
     if stats.peak_hour is not None:
@@ -90,8 +91,7 @@ def _format_group_stats(stats: GroupStats) -> str:
     if stats.extra_lines:
         lines.append("")
         lines.append("<b>Otros datos</b>")
-        for extra_line in stats.extra_lines:
-            lines.extend(f"• {_bold_before_colon(sub_line)}" for sub_line in extra_line.split("\n"))
+        lines.extend(f"• {_format_extra_line(extra_line)}" for extra_line in stats.extra_lines)
 
     return "\n".join(lines)
 
@@ -107,7 +107,7 @@ async def track_message(
     if message is None or user is None or not message.text:
         return
 
-    await activity_service.register_message(message.chat_id, user.id, user.username or user.full_name)
+    await activity_service.register_message(message.chat_id, user.id, user.username or "", user.full_name)
 
 
 @inject

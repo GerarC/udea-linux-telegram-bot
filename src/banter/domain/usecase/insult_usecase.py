@@ -10,8 +10,10 @@ class InsultUsecase(InsultService):
         self._phrase_port = phrase_port
         self._stats_port = stats_port
 
-    async def insult(self, chat_id: int, target_user_id: int | None, target_username: str) -> str:
+    async def insult(
+        self, chat_id: int, target_user_id: int | None, target_username: str, target_full_name: str
+    ) -> str:
         phrase = await self._phrase_port.get_random_insult(chat_id)
         if target_user_id is not None:
-            await self._stats_port.record_insult(chat_id, target_user_id, target_username)
+            await self._stats_port.record_insult(chat_id, target_user_id, target_username, target_full_name)
         return phrase or FALLBACK_INSULT

@@ -8,6 +8,7 @@ from telegram.ext import ContextTypes
 
 from common.application.bootstrap.container import ApplicationContainer
 from common.infrastructure.input.tg.display_name import display_name as format_display_name
+from common.infrastructure.input.tg.display_name import mention_html
 from user_info.domain.api.user_info_service import UserInfoService
 from user_info.domain.api.username_resolver_service import UsernameResolverService
 
@@ -33,23 +34,32 @@ async def gdb_command(
     reply_user = message.reply_to_message.from_user if message.reply_to_message else None
     if reply_user is not None:
         target_id = reply_user.id
-        target_username = reply_user.username or reply_user.full_name
+        target_username = reply_user.username or ""
+        target_full_name = reply_user.full_name
         display_name = format_display_name(reply_user)
     elif context.args:
         typed_username = " ".join(context.args).lstrip("@")
         target_id = await username_resolver_service.resolve_username(message.chat_id, typed_username)
         target_username = typed_username
-        display_name = f"@{typed_username}"
+        target_full_name = ""
+        # NOTE: without a resolved user_id there's no one to tag - falls back to escaped
+        # plain text (see UsernameResolverService).
+        display_name = (
+            mention_html(target_id, f"@{typed_username}")
+            if target_id is not None
+            else html.escape(f"@{typed_username}")
+        )
     else:
         user = update.effective_user
         if user is None:
             return
         target_id = user.id
-        target_username = user.username or user.full_name
+        target_username = user.username or ""
+        target_full_name = user.full_name
         display_name = format_display_name(user)
 
-    name = html.escape(display_name)
-    info = await user_info_service.get_user_info(message.chat_id, target_id, target_username)
+    name = display_name
+    info = await user_info_service.get_user_info(message.chat_id, target_id, target_username, target_full_name)
     if not info.sections:
         await message.reply_text(f"Todavía no hay información registrada de {name}.")
         return

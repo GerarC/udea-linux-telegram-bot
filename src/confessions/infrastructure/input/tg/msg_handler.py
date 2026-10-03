@@ -45,9 +45,10 @@ async def confesar_command(
         return
 
     content = " ".join(context.args)
-    username = user.username or user.full_name
 
-    confession = await submission_service.submit_confession(message.chat_id, user.id, username, content)
+    confession = await submission_service.submit_confession(
+        message.chat_id, user.id, user.username or "", user.full_name, content
+    )
 
     logger.info(
         "Confession submitted",

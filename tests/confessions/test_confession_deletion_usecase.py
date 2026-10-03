@@ -7,7 +7,7 @@ from tests.confessions.fakes import FakeConfessionRepository
 
 async def test_delete_rejected_when_not_admin():
     repo = FakeConfessionRepository()
-    confession = await repo.create_confession(1, 42, "fulano", "x" * 20)
+    confession = await repo.create_confession(1, 42, "fulano", "fulano", "x" * 20)
     usecase = ConfessionDeletionUsecase(repository_port=repo)
 
     result = await usecase.delete_confession(chat_id=1, confession_id=confession.id, requester_is_admin=False)
@@ -18,7 +18,7 @@ async def test_delete_rejected_when_not_admin():
 
 async def test_delete_accepted_when_admin():
     repo = FakeConfessionRepository()
-    confession = await repo.create_confession(1, 42, "fulano", "x" * 20)
+    confession = await repo.create_confession(1, 42, "fulano", "fulano", "x" * 20)
     usecase = ConfessionDeletionUsecase(repository_port=repo)
 
     result = await usecase.delete_confession(chat_id=1, confession_id=confession.id, requester_is_admin=True)
@@ -37,7 +37,7 @@ async def test_delete_raises_when_confession_not_found():
 
 async def test_delete_raises_when_confession_belongs_to_another_chat():
     repo = FakeConfessionRepository()
-    confession = await repo.create_confession(1, 42, "fulano", "x" * 20)
+    confession = await repo.create_confession(1, 42, "fulano", "fulano", "x" * 20)
     usecase = ConfessionDeletionUsecase(repository_port=repo)
 
     with pytest.raises(ConfessionNotFoundError):

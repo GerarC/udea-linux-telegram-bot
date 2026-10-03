@@ -30,10 +30,10 @@ class PostgresReminderRepository(ReminderRepositoryPort):
         self._pool = pool
 
     async def create_reminder(
-        self, chat_id: int, user_id: int, username: str, message: str, remind_at: datetime
+        self, chat_id: int, user_id: int, username: str, full_name: str, message: str, remind_at: datetime
     ) -> Reminder:
         async with self._pool.acquire() as conn, conn.transaction():
-            await upsert_member(conn, chat_id, user_id, username)
+            await upsert_member(conn, chat_id, user_id, username, full_name)
             row = await conn.fetchrow(CREATE_REMINDER_SQL, chat_id, user_id, message, remind_at)
         return _to_reminder(row)
 

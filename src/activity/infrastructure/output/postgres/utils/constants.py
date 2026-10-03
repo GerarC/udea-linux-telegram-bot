@@ -65,7 +65,7 @@ DO UPDATE SET message_count = chat_activity_daily.message_count + 1
 """
 
 GET_MONTHLY_RANKING_SQL = """
-SELECT gm.user_id, gm.username, ums.message_count
+SELECT gm.user_id, gm.username, gm.full_name, ums.message_count
 FROM user_message_stats ums
 JOIN group_members gm ON gm.chat_id = ums.chat_id AND gm.user_id = ums.user_id
 WHERE ums.chat_id = $1 AND ums.period_month = $2
@@ -74,11 +74,11 @@ LIMIT $3
 """
 
 GET_ALL_TIME_RANKING_SQL = """
-SELECT gm.user_id, gm.username, SUM(ums.message_count)::bigint AS message_count
+SELECT gm.user_id, gm.username, gm.full_name, SUM(ums.message_count)::bigint AS message_count
 FROM user_message_stats ums
 JOIN group_members gm ON gm.chat_id = ums.chat_id AND gm.user_id = ums.user_id
 WHERE ums.chat_id = $1
-GROUP BY gm.user_id, gm.username
+GROUP BY gm.user_id, gm.username, gm.full_name
 ORDER BY message_count DESC
 LIMIT $2
 """

@@ -8,7 +8,7 @@ from telegram.ext import ContextTypes
 
 from common.application.bootstrap.container import ApplicationContainer
 from common.infrastructure.input.tg.admin_check import requester_is_admin
-from common.infrastructure.input.tg.display_name import display_name
+from common.infrastructure.input.tg.display_name import display_name, display_name_from_record
 from points.domain.api.points_service import PointsService
 from points.domain.api.ranking_service import RankingService
 from points.domain.api.user_points_service import UserPointsService
@@ -24,7 +24,7 @@ def _format_ranking(ranking: list[RankingEntry]) -> str:
     for position, entry in enumerate(ranking, start=1):
         badge = RANK_EMOJI_LEVELS[position - 1] if position <= len(RANK_EMOJI_LEVELS) else ""
         user_points = entry.user_points
-        name = html.escape(f"@{user_points.username}" if user_points.username else str(user_points.user_id))
+        name = display_name_from_record(user_points.user_id, user_points.username, user_points.full_name)
         level = html.escape(entry.level_label)
         line = f"{position}. {name} — {user_points.points} Autispuntos ({level})"
         lines.append(f"{line} {badge}".rstrip())
@@ -70,7 +70,8 @@ async def grant_points_command(
         chat_id=chat_id,
         granter_is_admin=granter_is_admin,
         target_id=target.id,
-        target_username=target.username or target.full_name,
+        target_username=target.username or "",
+        target_full_name=target.full_name,
         amount=amount,
     )
 
@@ -89,8 +90,8 @@ async def grant_points_command(
         },
     )
 
-    granter_name = html.escape(display_name(granter))
-    target_name = html.escape(display_name(target))
+    granter_name = display_name(granter)
+    target_name = display_name(target)
     verb = "le ha otorgado" if amount >= 0 else "le ha quitado"
     amount_text = f"+{amount}" if amount >= 0 else str(abs(amount))
 
@@ -139,9 +140,10 @@ async def my_points_command(
     entry = await user_points_service.get_points(
         chat_id=message.chat_id,
         user_id=target.id,
-        username=target.username or target.full_name,
+        username=target.username or "",
+        full_name=target.full_name,
     )
-    name = html.escape(display_name(target))
+    name = display_name(target)
     level = html.escape(entry.level_label)
     logger.info("Points viewed", extra={"event": "points_viewed", "chat_id": message.chat_id, "target_id": target.id})
     text_body = f"{name} tiene {entry.user_points.points} Autispuntos.\nNivel de autismo: {level}."

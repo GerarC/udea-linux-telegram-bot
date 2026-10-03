@@ -39,7 +39,9 @@ async def encuesta_command(
         is_anonymous=False,
         allows_multiple_answers=False,
     )
-    await poll_recorder_service.record_poll(message.chat_id, user.id, user.username or user.full_name, poll.question)
+    await poll_recorder_service.record_poll(
+        message.chat_id, user.id, user.username or "", user.full_name, poll.question
+    )
     logger.info(
         "Poll created",
         extra={

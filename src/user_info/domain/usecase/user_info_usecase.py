@@ -18,18 +18,20 @@ class UserInfoUsecase:
     def __init__(self, providers: list[UserInfoProviderPort]) -> None:
         self._providers = providers
 
-    async def get_user_info(self, chat_id: int, user_id: int, username: str) -> UserInfo:
+    async def get_user_info(self, chat_id: int, user_id: int, username: str, full_name: str) -> UserInfo:
         results = await asyncio.gather(
-            *(self._safe_section(provider, chat_id, user_id, username) for provider in self._providers)
+            *(self._safe_section(provider, chat_id, user_id, username, full_name) for provider in self._providers)
         )
-        return UserInfo(user_id=user_id, username=username, sections=[s for s in results if s is not None])
+        return UserInfo(
+            user_id=user_id, username=username, full_name=full_name, sections=[s for s in results if s is not None]
+        )
 
     @staticmethod
     async def _safe_section(
-        provider: UserInfoProviderPort, chat_id: int, user_id: int, username: str
+        provider: UserInfoProviderPort, chat_id: int, user_id: int, username: str, full_name: str
     ) -> UserInfoSection | None:
         try:
-            return await provider.get_section(chat_id, user_id, username)
+            return await provider.get_section(chat_id, user_id, username, full_name)
         except Exception:
             logging.exception(
                 "user_info provider failed",

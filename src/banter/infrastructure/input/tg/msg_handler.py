@@ -12,6 +12,8 @@ from banter.domain.api.insult_service import InsultService
 from banter.domain.api.target_resolver_service import TargetResolverService
 from common.application.bootstrap.container import ApplicationContainer
 from common.infrastructure.input.tg.admin_check import requester_is_admin
+from common.infrastructure.input.tg.display_name import display_name as format_display_name
+from common.infrastructure.input.tg.display_name import mention_html
 
 logger = logging.getLogger(__name__)
 
@@ -20,14 +22,13 @@ async def _resolve_target(
     message: Message,
     context: ContextTypes.DEFAULT_TYPE,
     target_resolver_service: TargetResolverService,
-) -> tuple[str, int | None, str] | None:
+) -> tuple[str, int | None, str, str] | None:
     # NOTE: reply-to-message takes priority over a typed @username, since it
     # unambiguously identifies a real Telegram user instead of a lookup that can miss.
     reply_user = message.reply_to_message.from_user if message.reply_to_message else None
     if reply_user is not None:
-        raw_username = reply_user.username or reply_user.full_name
-        display_name = f"@{reply_user.username}" if reply_user.username else reply_user.full_name
-        return display_name, reply_user.id, raw_username
+        display_name = format_display_name(reply_user)
+        return display_name, reply_user.id, reply_user.username or "", reply_user.full_name
 
     if not context.args:
         return None
@@ -36,12 +37,14 @@ async def _resolve_target(
     target_id = await target_resolver_service.resolve(message.chat_id, typed_username)
     if target_id is None:
         # NOTE: a lookup miss doesn't fail the command - the insult/halago still goes
-        # out using the typed text, it just can't be counted in banter_stats.
+        # out using the typed text, it just can't be counted in banter_stats. Without a
+        # resolved user_id there's no one to tag, so this falls back to escaped plain text.
         logger.warning(
             "Banter target not found in group_members",
             extra={"event": "banter_target_not_found", "chat_id": message.chat_id, "typed_username": typed_username},
         )
-    return f"@{typed_username}", target_id, typed_username
+        return html.escape(f"@{typed_username}"), target_id, typed_username, ""
+    return mention_html(target_id, f"@{typed_username}"), target_id, typed_username, ""
 
 
 @inject
@@ -59,14 +62,14 @@ async def insultar_command(
     if resolved is None:
         await message.reply_text("Usa: /insultar @usuario, o responde (reply) al mensaje de la persona.")
         return
-    display_name, target_id, raw_username = resolved
+    display_name, target_id, raw_username, raw_full_name = resolved
 
-    insulto = await insult_service.insult(message.chat_id, target_id, raw_username)
+    insulto = await insult_service.insult(message.chat_id, target_id, raw_username, raw_full_name)
     logger.info(
         "Insult sent",
         extra={"event": "insult_sent", "chat_id": message.chat_id, "target": display_name},
     )
-    await message.reply_html(f"{html.escape(display_name)}, {html.escape(insulto)}")
+    await message.reply_html(f"{display_name}, {html.escape(insulto)}")
 
 
 @inject
@@ -84,14 +87,14 @@ async def halagar_command(
     if resolved is None:
         await message.reply_text("Usa: /halagar @usuario, o responde (reply) al mensaje de la persona.")
         return
-    display_name, target_id, raw_username = resolved
+    display_name, target_id, raw_username, raw_full_name = resolved
 
-    halago = await compliment_service.compliment(message.chat_id, target_id, raw_username)
+    halago = await compliment_service.compliment(message.chat_id, target_id, raw_username, raw_full_name)
     logger.info(
         "Compliment sent",
         extra={"event": "compliment_sent", "chat_id": message.chat_id, "target": display_name},
     )
-    await message.reply_html(f"{html.escape(display_name)}, {html.escape(halago)}")
+    await message.reply_html(f"{display_name}, {html.escape(halago)}")
 
 
 @inject

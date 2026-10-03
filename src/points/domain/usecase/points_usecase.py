@@ -16,11 +16,12 @@ class PointsUsecase(PointsService):
         granter_is_admin: bool,
         target_id: int,
         target_username: str,
+        target_full_name: str,
         amount: int,
     ) -> GrantResult | None:
         if not granter_is_admin:
             return None
 
-        target = await self._repository_port.add_points(chat_id, target_id, target_username, amount)
+        target = await self._repository_port.add_points(chat_id, target_id, target_username, target_full_name, amount)
         ranking = await self._ranking_service.get_ranking(chat_id)
         return GrantResult(target=target, level_label=level_for(target.points), ranking=ranking)

@@ -6,11 +6,11 @@ class FakePointsRepository(PointsRepositoryPort):
     def __init__(self) -> None:
         self.points: dict[tuple[int, int], UserPoints] = {}
 
-    async def add_points(self, chat_id: int, user_id: int, username: str, amount: int) -> UserPoints:
+    async def add_points(self, chat_id: int, user_id: int, username: str, full_name: str, amount: int) -> UserPoints:
         key = (chat_id, user_id)
         current = self.points.get(key)
         new_total = (current.points if current else 0) + amount
-        updated = UserPoints(user_id=user_id, username=username, points=new_total)
+        updated = UserPoints(user_id=user_id, username=username, full_name=full_name, points=new_total)
         self.points[key] = updated
         return updated
 

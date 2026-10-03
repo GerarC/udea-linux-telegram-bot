@@ -32,7 +32,9 @@ class FakeBanterStatsPort(BanterStatsPort):
     def __init__(self) -> None:
         self.stats: dict[tuple[int, int], BanterStat] = {}
 
-    def _bump(self, chat_id: int, user_id: int, username: str, insults: int = 0, compliments: int = 0) -> None:
+    def _bump(
+        self, chat_id: int, user_id: int, username: str, full_name: str, insults: int = 0, compliments: int = 0
+    ) -> None:
         key = (chat_id, user_id)
         current = self.stats.get(key)
         base_insults = current.insults_received if current else 0
@@ -40,15 +42,16 @@ class FakeBanterStatsPort(BanterStatsPort):
         self.stats[key] = BanterStat(
             user_id=user_id,
             username=username,
+            full_name=full_name,
             insults_received=base_insults + insults,
             compliments_received=base_compliments + compliments,
         )
 
-    async def record_insult(self, chat_id: int, user_id: int, username: str) -> None:
-        self._bump(chat_id, user_id, username, insults=1)
+    async def record_insult(self, chat_id: int, user_id: int, username: str, full_name: str) -> None:
+        self._bump(chat_id, user_id, username, full_name, insults=1)
 
-    async def record_compliment(self, chat_id: int, user_id: int, username: str) -> None:
-        self._bump(chat_id, user_id, username, compliments=1)
+    async def record_compliment(self, chat_id: int, user_id: int, username: str, full_name: str) -> None:
+        self._bump(chat_id, user_id, username, full_name, compliments=1)
 
     async def get_stats(self, chat_id: int, user_id: int) -> BanterStat | None:
         return self.stats.get((chat_id, user_id))

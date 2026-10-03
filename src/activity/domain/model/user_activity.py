@@ -5,4 +5,5 @@ from dataclasses import dataclass
 class UserActivity:
     user_id: int
     username: str
+    full_name: str
     message_count: int

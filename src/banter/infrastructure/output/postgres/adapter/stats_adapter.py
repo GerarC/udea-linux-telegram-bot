@@ -16,6 +16,7 @@ def _row_to_stat(user_id: int, row: asyncpg.Record) -> BanterStat:
     return BanterStat(
         user_id=user_id,
         username=row["username"],
+        full_name=row["full_name"],
         insults_received=row["insults_received"],
         compliments_received=row["compliments_received"],
     )
@@ -27,14 +28,14 @@ class PostgresBanterStatsRepository(BanterStatsPort):
     def __init__(self, pool: asyncpg.Pool) -> None:
         self._pool = pool
 
-    async def record_insult(self, chat_id: int, user_id: int, username: str) -> None:
+    async def record_insult(self, chat_id: int, user_id: int, username: str, full_name: str) -> None:
         async with self._pool.acquire() as conn, conn.transaction():
-            await upsert_member(conn, chat_id, user_id, username)
+            await upsert_member(conn, chat_id, user_id, username, full_name)
             await conn.execute(RECORD_INSULT_SQL, chat_id, user_id)
 
-    async def record_compliment(self, chat_id: int, user_id: int, username: str) -> None:
+    async def record_compliment(self, chat_id: int, user_id: int, username: str, full_name: str) -> None:
         async with self._pool.acquire() as conn, conn.transaction():
-            await upsert_member(conn, chat_id, user_id, username)
+            await upsert_member(conn, chat_id, user_id, username, full_name)
             await conn.execute(RECORD_COMPLIMENT_SQL, chat_id, user_id)
 
     async def get_stats(self, chat_id: int, user_id: int) -> BanterStat | None:

@@ -8,7 +8,7 @@ class FakeUserInfoProvider(UserInfoProviderPort):
         self._section = section
         self._error = error
 
-    async def get_section(self, chat_id: int, user_id: int, username: str) -> UserInfoSection | None:
+    async def get_section(self, chat_id: int, user_id: int, username: str, full_name: str) -> UserInfoSection | None:
         if self._error is not None:
             raise self._error
         return self._section

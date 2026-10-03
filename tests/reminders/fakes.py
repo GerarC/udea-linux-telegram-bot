@@ -10,7 +10,7 @@ class FakeReminderRepository(ReminderRepositoryPort):
         self._next_id = 1
 
     async def create_reminder(
-        self, chat_id: int, user_id: int, username: str, message: str, remind_at: datetime
+        self, chat_id: int, user_id: int, username: str, full_name: str, message: str, remind_at: datetime
     ) -> Reminder:
         reminder = Reminder(
             id=self._next_id, chat_id=chat_id, user_id=user_id, message=message, remind_at=remind_at, fired=False

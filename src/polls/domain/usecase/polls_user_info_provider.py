@@ -9,7 +9,7 @@ class PollsUserInfoProvider(UserInfoProviderPort):
     def __init__(self, poll_count_service: PollCountService) -> None:
         self._poll_count_service = poll_count_service
 
-    async def get_section(self, chat_id: int, user_id: int, username: str) -> UserInfoSection | None:
+    async def get_section(self, chat_id: int, user_id: int, username: str, full_name: str) -> UserInfoSection | None:
         count = await self._poll_count_service.get_poll_count(chat_id, user_id)
         if count == 0:
             return None

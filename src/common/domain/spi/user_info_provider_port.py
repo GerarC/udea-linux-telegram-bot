@@ -10,6 +10,6 @@ class UserInfoProviderPort(Protocol):
     container - see ApplicationContainer.user_info_providers.
     """
 
-    async def get_section(self, chat_id: int, user_id: int, username: str) -> UserInfoSection | None:
+    async def get_section(self, chat_id: int, user_id: int, username: str, full_name: str) -> UserInfoSection | None:
         """Returns None when the feature has nothing to show for this user yet."""
         ...

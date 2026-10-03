@@ -27,9 +27,11 @@ class PostgresConfessionRepository(ConfessionRepositoryPort):
     def __init__(self, pool: asyncpg.Pool) -> None:
         self._pool = pool
 
-    async def create_confession(self, chat_id: int, user_id: int, username: str, content: str) -> Confession:
+    async def create_confession(
+        self, chat_id: int, user_id: int, username: str, full_name: str, content: str
+    ) -> Confession:
         async with self._pool.acquire() as conn, conn.transaction():
-            await upsert_member(conn, chat_id, user_id, username)
+            await upsert_member(conn, chat_id, user_id, username, full_name)
             row = await conn.fetchrow(CREATE_CONFESSION_SQL, chat_id, user_id, content)
         return _to_confession(row)
 

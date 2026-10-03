@@ -9,7 +9,7 @@ class BanterUserInfoProvider(UserInfoProviderPort):
     def __init__(self, user_banter_stats_service: UserBanterStatsService) -> None:
         self._user_banter_stats_service = user_banter_stats_service
 
-    async def get_section(self, chat_id: int, user_id: int, username: str) -> UserInfoSection | None:
+    async def get_section(self, chat_id: int, user_id: int, username: str, full_name: str) -> UserInfoSection | None:
         stats = await self._user_banter_stats_service.get_stats(chat_id, user_id)
         if stats is None:
             return None

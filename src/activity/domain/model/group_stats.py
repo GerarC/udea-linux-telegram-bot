@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from activity.domain.model.user_activity import UserActivity
+from common.domain.model.group_stat_line import GroupStatLine
 
 
 @dataclass(frozen=True)
@@ -11,4 +12,4 @@ class GroupStats:
     top_user_this_month: UserActivity | None
     peak_hour: int | None
     peak_weekday: int | None
-    extra_lines: list[str]
+    extra_lines: list[GroupStatLine]

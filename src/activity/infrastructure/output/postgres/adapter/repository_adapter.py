@@ -28,10 +28,17 @@ class PostgresActivityRepository(ActivityRepositoryPort):
         self._pool = pool
 
     async def register_message(
-        self, chat_id: int, user_id: int, username: str, period_month: date, hour_of_day: int, activity_date: date
+        self,
+        chat_id: int,
+        user_id: int,
+        username: str,
+        full_name: str,
+        period_month: date,
+        hour_of_day: int,
+        activity_date: date,
     ) -> None:
         async with self._pool.acquire() as conn, conn.transaction():
-            await upsert_member(conn, chat_id, user_id, username)
+            await upsert_member(conn, chat_id, user_id, username, full_name)
             await conn.execute(REGISTER_MESSAGE_SQL, chat_id, user_id, period_month)
             await conn.execute(REGISTER_DAILY_ACTIVITY_SQL, chat_id, activity_date, hour_of_day)
 
@@ -43,7 +50,12 @@ class PostgresActivityRepository(ActivityRepositoryPort):
         async with self._pool.acquire() as conn:
             rows = await conn.fetch(GET_MONTHLY_RANKING_SQL, chat_id, period_month, limit)
         return [
-            UserActivity(user_id=row["user_id"], username=row["username"], message_count=row["message_count"])
+            UserActivity(
+                user_id=row["user_id"],
+                username=row["username"],
+                full_name=row["full_name"],
+                message_count=row["message_count"],
+            )
             for row in rows
         ]
 
@@ -51,7 +63,12 @@ class PostgresActivityRepository(ActivityRepositoryPort):
         async with self._pool.acquire() as conn:
             rows = await conn.fetch(GET_ALL_TIME_RANKING_SQL, chat_id, limit)
         return [
-            UserActivity(user_id=row["user_id"], username=row["username"], message_count=row["message_count"])
+            UserActivity(
+                user_id=row["user_id"],
+                username=row["username"],
+                full_name=row["full_name"],
+                message_count=row["message_count"],
+            )
             for row in rows
         ]
 
